@@ -1,7 +1,7 @@
 <resources>
 
     <!-- App Theme -->
-    <style name="Theme.MusicPlayer" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.VibeMind" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <item name="colorPrimary">#9B59B6</item>
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="colorSecondary">#2C3E50</item>
