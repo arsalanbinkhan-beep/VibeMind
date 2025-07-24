@@ -57,7 +57,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:src="@drawable/ic_play_pause"
-            android:tint="@color/purple_500"
+            app:tint="@color/purple_500"
             android:contentDescription="@string/play_song" />
 
     </RelativeLayout>
