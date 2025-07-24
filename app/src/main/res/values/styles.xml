@@ -18,4 +18,8 @@
         <item name="android:textSize">14sp</item>
         <item name="android:minHeight">40dp</item>
     </style>
+    <style name="ShapeAppearanceOverlay.App.CornerSize50Percent" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>

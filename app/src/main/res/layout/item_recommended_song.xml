@@ -14,42 +14,42 @@
         android:layout_height="96dp"
         android:padding="12dp">
 
-        <!-- Album Art / Icon -->
+        <!-- Album Art -->
         <ImageView
-            android:id="@+id/ivSongIcon"
+            android:id="@+id/ivRecommendedArt"
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_song_placeholder"
+            android:src="@drawable/ic_album_art"
             android:background="@drawable/rounded_background"
-            android:contentDescription="@string/song_icon" />
+            android:contentDescription="@string/album_art" />
 
         <!-- Song Title -->
         <TextView
-            android:id="@+id/tvSongTitle"
+            android:id="@+id/tvRecommendedTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/ivSongIcon"
+            android:layout_toEndOf="@id/ivRecommendedArt"
             android:layout_marginStart="12dp"
-            android:text="Song Name"
+            android:text="Song Title"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <!-- Song Category / Genre -->
+        <!-- Artist Name -->
         <TextView
-            android:id="@+id/tvSongCategory"
+            android:id="@+id/tvRecommendedArtist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tvSongTitle"
-            android:layout_toEndOf="@id/ivSongIcon"
+            android:layout_below="@id/tvRecommendedTitle"
+            android:layout_toEndOf="@id/ivRecommendedArt"
             android:layout_marginStart="12dp"
             android:layout_marginTop="4dp"
             android:text="Artist Name"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
-        <!-- Play Icon -->
+        <!-- Play Button -->
         <ImageView
             android:id="@+id/ivPlayRecommended"
             android:layout_width="32dp"
