@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="background_dark">#121212</color>
+    <color name="nav_bar_background">#1C1C1C</color> <color name="mini_player_background">#2C2C2C</color>
+    <color name="recyclerview_background">#2A2A2A</color>
+    <color name="album_art_placeholder_bg">#4A4A4A</color>
+    <color name="rounded_background_color">#2A2A2A</color> <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#AAAAAA</color> <color name="text_accent">#BB86FC</color>
+
+    <color name="icon_color">#E0E0E0</color>
+
+    <color name="nav_item_active">#BB86FC</color>
+    <color name="nav_item_inactive">#6A6A6A</color> <color name="button_selected_bg">#BB86FC</color>
+    <color name="button_selected_text">#FFFFFF</color>
+    <color name="button_normal_bg">#333333</color> <color name="button_normal_text">#CCCCCC</color>
+    <color name="background_darker">#1C1C1C</color>
+    <color name="card_background">#282828</color>
+    <color name="player_background">#3A3A3A</color>
+    <color name="purple_600">#8B5CF6</color> <!-- Corresponds to Tailwind's purple-600 -->
+    <color name="purple_400">#A78BFA</color> <!-- Corresponds to Tailwind's purple-400 -->
+    <color name="pink_300">#FBCFE8</color> <!-- Corresponds to Tailwind's pink-300 -->
+    <color name="pink_600">#EC4899</color> <!-- Corresponds to Tailwind's pink-600 -->
+    <color name="indigo_300">#A5B4FC</color> <!-- Corresponds to Tailwind's indigo-300 -->
+    <color name="indigo_600">#6366F1</color> <!-- Corresponds to Tailwind's indigo-600 -->
+    <color name="emerald_300">#6EE7B7</color> <!-- Corresponds to Tailwind's emerald-300 -->
+    <color name="emerald_600">#10B981</color> <!-- Corresponds to Tailwind's emerald-600 -->
+    <color name="gray_300">#D1D5DB</color>
+    <color name="gray_400">#9CA3AF</color>
+    <color name="gray_500">#6B7280</color>
+    <color name="gray_600">#4B5563</color>
+    <color name="gray_700">#374151</color>
+    <color name="gray_800">#1F2937</color>
+    <color name="whiteer">#FFFFFF</color>
+    <color name="red_400">#F87171</color>
+</resources>
