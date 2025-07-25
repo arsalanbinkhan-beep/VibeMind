@@ -4,17 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0A0F">
+    android:background="@color/primary_dark_background">
+
     <ImageView
-    android:id="@+id/icon_menu"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
-    android:layout_marginTop="16dp"
-    android:src="@drawable/ic_menu"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent"
-    android:contentDescription="Menu icon" />
+        android:id="@+id/icon_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_menu"
+        app:tint="@color/text_icons"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="Menu icon" />
 
     <ImageView
         android:id="@+id/icon_more_options"
@@ -23,6 +25,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:src="@drawable/ic_more_vert"
+        app:tint="@color/text_icons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:contentDescription="More options icon" />
@@ -32,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Passage"
-        android:textColor="@android:color/white"
+        android:textColor="@color/text_icons"
         android:textSize="32sp"
         android:textStyle="bold"
         android:layout_marginStart="32dp"
@@ -45,7 +48,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Roary"
-        android:textColor="#AAAAAA"
+        android:textColor="@color/subtle_text_inactive_icons"
         android:textSize="18sp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="4dp"
@@ -58,6 +61,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         android:src="@drawable/ic_heart_outline"
+        app:tint="@color/text_icons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/text_song_title"
         app:layout_constraintBottom_toBottomOf="@+id/text_artist_name"
@@ -103,7 +107,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="3:23"
-            android:textColor="@android:color/white"
+            android:textColor="@color/text_icons"
             android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -136,6 +140,7 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_shuffle"
             android:padding="8dp"
+            app:tint="@color/subtle_text_inactive_icons"
             android:contentDescription="Shuffle button" />
 
         <ImageView
@@ -144,6 +149,7 @@
             android:layout_height="64dp"
             android:src="@drawable/ic_skip_previous"
             android:padding="8dp"
+            app:tint="@color/text_icons"
             android:contentDescription="Previous button" />
 
         <ImageView
@@ -153,6 +159,7 @@
             android:src="@drawable/ic_play_circle"
             android:padding="8dp"
             android:background="@drawable/rounded_button_background"
+            app:tint="@color/text_icons"
             android:contentDescription="Play/Pause button" />
 
         <ImageView
@@ -161,6 +168,7 @@
             android:layout_height="64dp"
             android:src="@drawable/ic_skip_next"
             android:padding="8dp"
+            app:tint="@color/text_icons"
             android:contentDescription="Next button" />
 
         <ImageView
@@ -169,8 +177,8 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_repeat"
             android:padding="8dp"
+            app:tint="@color/subtle_text_inactive_icons"
             android:contentDescription="Repeat button" />
 
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

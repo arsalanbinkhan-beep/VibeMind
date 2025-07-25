@@ -43,4 +43,13 @@
     <color name="whiteer">#FFFFFF</color>
     <color name="red_400">#F87171</color>
     <color name="secondary_card_background">#1F1F2C</color>
+    <color name="primary_dark_background">#0A0A0F</color>
+    <color name="secondary_background_cards">#1F1F2C</color>
+    <color name="accent_1_interactive_elements">#8A2BE2</color>
+    <color name="accent_2_highlight_progress_bars">#BF00FF</color>
+    <color name="accent_3_subtle_glow">#E0BBE4</color>
+    <color name="text_icons">#F5F0FF</color>
+    <color name="subtle_text_inactive_icons">#7B68EE</color>
+    <color name="blur_overlay">#66000000</color>
+    <color name="semi_transparent_secondary_background">#99292A3D</color>
 </resources>
