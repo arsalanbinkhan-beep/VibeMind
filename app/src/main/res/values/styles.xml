@@ -1,7 +1,7 @@
 <resources>
 
     <!-- App Theme -->
-    <style name="Theme.MusicPlayer" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+    <style name="Theme.VibeMind" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <item name="colorPrimary">#9B59B6</item>
         <item name="colorOnPrimary">#FFFFFF</item>
         <item name="colorSecondary">#2C3E50</item>
@@ -17,5 +17,9 @@
         <item name="chipStrokeColor">#555555</item>
         <item name="android:textSize">14sp</item>
         <item name="android:minHeight">40dp</item>
+    </style>
+    <style name="ShapeAppearanceOverlay.App.CornerSize50Percent" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
     </style>
 </resources>
