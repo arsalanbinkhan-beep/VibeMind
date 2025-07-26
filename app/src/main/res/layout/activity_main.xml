@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="32dp"
-        android:text="Motives"
+        android:text="@string/motive_title"
         android:textColor="@color/text_icons"
         android:textSize="32sp"
         android:textStyle="bold"
@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
-        android:text="Category"
+        android:text="@string/category_title"
         android:textColor="@color/subtle_text_inactive_icons"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -58,66 +58,66 @@
             android:layout_rowSpan="2"
             android:layout_columnWeight="1"
             android:background="@drawable/button_category_selected"
-            android:text="Pop"
+            android:text="@string/category_pop"
             android:textAllCaps="false"
             android:textColor="@color/text_icons"
             app:cornerRadius="12dp" />
 
         <Button
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="90dp"
             android:layout_columnWeight="1"
-            android:text="Rock"
             android:background="@drawable/button_category_normal"
-            android:textColor="@color/text_icons"
+            android:text="@string/category_rock"
             android:textAllCaps="false"
-            style="@style/Widget.MaterialComponents.Button"
+            android:textColor="@color/text_icons"
             app:cornerRadius="12dp" />
 
         <Button
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="90dp"
             android:layout_columnWeight="1"
-            android:text="Epic"
             android:background="@drawable/button_category_normal"
-            android:textColor="@color/text_icons"
+            android:text="@string/category_epic"
             android:textAllCaps="false"
-            style="@style/Widget.MaterialComponents.Button"
+            android:textColor="@color/text_icons"
             app:cornerRadius="12dp" />
 
         <Button
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="90dp"
             android:layout_columnWeight="1"
-            android:text="Lo-fi"
             android:background="@drawable/button_category_normal"
-            android:textColor="@color/text_icons"
+            android:text="@string/category_lofi"
             android:textAllCaps="false"
-            style="@style/Widget.MaterialComponents.Button"
+            android:textColor="@color/text_icons"
             app:cornerRadius="12dp" />
 
         <Button
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="90dp"
-            android:layout_columnWeight="2"
             android:layout_columnSpan="2"
-            android:text="Symphonic"
+            android:layout_columnWeight="2"
             android:background="@drawable/button_category_normal"
-            android:textColor="@color/text_icons"
+            android:text="@string/category_symphonic"
             android:textAllCaps="false"
-            style="@style/Widget.MaterialComponents.Button"
+            android:textColor="@color/text_icons"
             app:cornerRadius="12dp" />
 
         <ImageButton
+            style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="90dp"
             android:layout_columnWeight="1"
-            android:src="@drawable/ic_arrow_down"
             android:background="@drawable/button_category_normal"
-            app:tint="@color/text_icons"
-            style="@style/Widget.MaterialComponents.Button"
+            android:contentDescription="@string/more_categories"
+            android:src="@drawable/ic_arrow_down"
             app:cornerRadius="12dp"
-            android:contentDescription="@string/more_categories" />
+            app:tint="@color/text_icons" />
 
     </GridLayout>
 
@@ -125,18 +125,17 @@
         android:id="@+id/leftNavBar"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:background="@drawable/nav_bar_background_blur"
-        android:orientation="vertical"
-        android:paddingTop="32dp"
-        android:paddingBottom="32dp"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="16dp"
+        android:background="@drawable/nav_bar_background_blur"
+        android:orientation="vertical"
+        android:paddingStart="8dp"
+        android:paddingTop="32dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="32dp"
         app:layout_constraintBottom_toTopOf="@+id/miniPlayer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/categoryGrid">
+        app:layout_constraintStart_toStartOf="parent">
 
         <ImageView
             android:layout_width="32dp"
@@ -197,12 +196,12 @@
                 android:id="@+id/tvSongs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Songs"
+                android:layout_marginStart="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/songs_title"
                 android:textColor="@color/text_icons"
                 android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_marginStart="16dp"
-                android:layout_marginBottom="8dp"/>
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewSongs"
@@ -213,17 +212,19 @@
                 android:background="@drawable/nav_bar_background_blur"
                 android:padding="16dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_song" /> <TextView
+                tools:listitem="@layout/item_song" />
+
+            <TextView
                 android:id="@+id/tvRecommendedSongs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Recommended Songs"
-                android:textColor="@color/text_icons"
-                android:textSize="20sp"
-                android:textStyle="bold"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="8dp"
+                android:text="@string/recommended_songs_title"
+                android:textColor="@color/text_icons"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewRecommendedSongs"
@@ -234,17 +235,19 @@
                 android:background="@drawable/nav_bar_background_blur"
                 android:padding="16dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_recommended_song" /> <TextView
+                tools:listitem="@layout/item_recommended_song" />
+
+            <TextView
                 android:id="@+id/tvLastPlayedSongs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Last Played Songs"
-                android:textColor="@color/text_icons"
-                android:textSize="20sp"
-                android:textStyle="bold"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="8dp"
+                android:text="@string/last_played_songs_title"
+                android:textColor="@color/text_icons"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewLastPlayedSongs"
@@ -252,11 +255,12 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:orientation="horizontal"
                 android:background="@drawable/nav_bar_background_blur"
+                android:orientation="horizontal"
                 android:padding="8dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                tools:listitem="@layout/item_song_horizontal" /> </LinearLayout>
+                tools:listitem="@layout/item_song_horizontal" />
+        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -293,7 +297,7 @@
                 android:id="@+id/tvSongTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Prisioner"
+                android:text="@string/default_song_title"
                 android:textColor="@color/text_icons"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -302,10 +306,10 @@
                 android:id="@+id/tvDevicesAvailable"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableStart="@drawable/ic_devices_available"
+                app:drawableStart="@drawable/ic_devices_available"
                 android:drawablePadding="4dp"
                 android:gravity="center_vertical"
-                android:text="Devices Available"
+                android:text="@string/devices_available"
                 android:textColor="@color/subtle_text_inactive_icons"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -320,7 +324,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/ivPlayPause"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/subtle_text_inactive_icons"/>
+            app:tint="@color/subtle_text_inactive_icons" />
 
         <ImageView
             android:id="@+id/ivPlayPause"

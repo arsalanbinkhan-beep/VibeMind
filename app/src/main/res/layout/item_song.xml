@@ -11,14 +11,14 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="96dp"
+        android:layout_height="wrap_content"
         android:padding="12dp">
 
         <!-- Album Art / Icon -->
         <ImageView
             android:id="@+id/ivSongIcon"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_song_placeholder"
             android:background="@drawable/rounded_background"

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="120dp"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginEnd="16dp"
+    android:padding="4dp"
+    android:background="@drawable/rounded_background">
+
+    <ImageView
+        android:id="@+id/iv_playlist_cover"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/album_art"
+        android:scaleType="centerCrop"
+        android:background="#1A1A22"
+        android:contentDescription="Playlist Cover"
+        android:layout_marginBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/tv_playlist_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textColor="#F5F0FF"
+        android:textSize="14sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:gravity="center"
+        tools:text="Daily Mix 1"/>
+
+    <TextView
+        android:id="@+id/tv_playlist_artist"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#B3B3B3"
+        android:textSize="12sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:gravity="center"
+        tools:text="Artist Name"/>
+
+</LinearLayout>

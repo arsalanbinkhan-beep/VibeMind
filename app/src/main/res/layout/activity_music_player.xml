@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primary_dark_background">
+    android:background="@drawable/background">
 
     <ImageView
         android:id="@+id/icon_menu"
@@ -16,7 +16,7 @@
         app:tint="@color/text_icons"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="Menu icon" />
+        android:contentDescription="@string/menu_icon" />
 
     <ImageView
         android:id="@+id/icon_more_options"
@@ -28,7 +28,7 @@
         app:tint="@color/text_icons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="More options icon" />
+        android:contentDescription="@string/more_options_icon" />
 
     <TextView
         android:id="@+id/text_song_title"
