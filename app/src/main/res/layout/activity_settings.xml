@@ -4,12 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background">
-    <!--tools:context=".SettingsActivity"-->
+    android:background="@drawable/background"
+    tools:context=".SettingsActivity">
+
     <View
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/blur_overlay" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/blur_overlay" />
 
     <LinearLayout
         android:id="@+id/leftNavBar"
@@ -30,6 +31,7 @@
         app:layout_constraintVertical_bias="0.831">
 
         <ImageView
+            android:id="@+id/ivHome"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_gravity="center_horizontal"
@@ -39,6 +41,7 @@
             app:tint="@color/subtle_text_inactive_icons" />
 
         <ImageView
+            android:id="@+id/ivAlbum"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_gravity="center_horizontal"
@@ -48,6 +51,7 @@
             app:tint="@color/subtle_text_inactive_icons" />
 
         <ImageView
+            android:id="@+id/ivSearch"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_gravity="center_horizontal"
@@ -57,6 +61,7 @@
             app:tint="@color/subtle_text_inactive_icons" />
 
         <ImageView
+            android:id="@+id/ivSettings"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_gravity="center_horizontal"
@@ -307,8 +312,8 @@
                     android:id="@+id/switchAutoScan"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:-checked="true"
                     android:layout_marginBottom="16dp"
+                    android:checked="true"
                     android:text="@string/setting_auto_scan_on_launch"
                     android:textColor="@color/text_icons"
                     android:thumbTint="@color/accent_1_interactive_elements"
@@ -601,8 +606,6 @@
                     android:textColor="@color/text_icons"
                     android:textSize="16sp" />
             </LinearLayout>
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
