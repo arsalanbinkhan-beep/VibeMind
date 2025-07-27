@@ -6,9 +6,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background"
-    android:padding="16dp"
-    >
+    android:padding="16dp">
 
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Back Button"
+        android:src="@drawable/ic_arrow_back"
+        app:tint="#F5F0FF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="0dp"
+        android:layout_marginStart="0dp" />
     <TextView
         android:id="@+id/tv_greeting"
         android:layout_width="wrap_content"
@@ -17,10 +28,10 @@
         android:textColor="#F5F0FF"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
+        app:layout_constraintTop_toTopOf="@+id/btnBack"
+        app:layout_constraintBottom_toBottomOf="@+id/btnBack"
+        app:layout_constraintStart_toEndOf="@+id/btnBack"
+        android:layout_marginStart="16dp" /> <TextView
         android:id="@+id/tv_playlist_for_you_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -36,7 +47,8 @@
         android:id="@+id/rv_playlist_for_you"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal" android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:clipToPadding="false"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
         android:overScrollMode="never"
@@ -64,7 +76,8 @@
         android:id="@+id/rv_your_playlists"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:orientation="horizontal" android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:clipToPadding="false"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
         android:overScrollMode="never"

@@ -103,7 +103,7 @@
             android:layout_columnSpan="2"
             android:layout_columnWeight="2"
             android:background="@drawable/button_category_normal"
-            android:text="@string/category_symphonic"
+            android:text="@string/category_for_you"
             android:textAllCaps="false"
             android:textColor="@color/text_icons"
             app:cornerRadius="12dp" />
