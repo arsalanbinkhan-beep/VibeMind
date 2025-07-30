@@ -40,13 +40,21 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.material:material:1.x.x")
+    implementation("androidx.media3:media3-exoplayer:1.7.1")
+    implementation("androidx.media3:media3-exoplayer-dash:1.7.1")
+    implementation("androidx.media3:media3-ui:1.7.1")
+    implementation("androidx.media3:media3-ui-compose:1.7.1")
+
+    // CHANGED: Using libs.material instead of explicit string
+    implementation(libs.material)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    // Removed the redundant libs.material here, as it's now above
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.recyclerview)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

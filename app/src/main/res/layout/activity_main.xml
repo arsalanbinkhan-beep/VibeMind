@@ -7,11 +7,6 @@
     android:background="@drawable/background"
     tools:context=".MainActivity">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/blur_overlay" />
-
     <TextView
         android:id="@+id/tvMotive"
         android:layout_width="wrap_content"
@@ -52,6 +47,7 @@
         app:layout_constraintTop_toBottomOf="@+id/tvCategory">
 
         <Button
+            android:id="@+id/categoryPop"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="188dp"
@@ -64,6 +60,7 @@
             app:cornerRadius="12dp" />
 
         <Button
+            android:id="@+id/categoryRock"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="90dp"
@@ -75,6 +72,7 @@
             app:cornerRadius="12dp" />
 
         <Button
+            android:id="@+id/categoryEpic"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="90dp"
@@ -86,6 +84,7 @@
             app:cornerRadius="12dp" />
 
         <Button
+            android:id="@+id/categoryLofi"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="90dp"
@@ -97,6 +96,7 @@
             app:cornerRadius="12dp" />
 
         <Button
+            android:id="@+id/categoryForYou"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="90dp"
@@ -264,6 +264,11 @@
                 android:padding="8dp"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:listitem="@layout/item_song_horizontal" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/blur_overlay" />
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/background">
 
+    <!-- Top Navigation -->
     <ImageView
         android:id="@+id/icon_menu"
         android:layout_width="wrap_content"
@@ -30,6 +31,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:contentDescription="@string/more_options_icon" />
 
+    <!-- Song Title & Artist -->
     <TextView
         android:id="@+id/text_song_title"
         android:layout_width="wrap_content"
@@ -53,8 +55,9 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="4dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_song_title" />
+        app:layout_constraintTop_toBottomOf="@id/text_song_title" />
 
+    <!-- Heart/Favorite Button -->
     <ImageView
         android:id="@+id/icon_heart"
         android:layout_width="wrap_content"
@@ -63,10 +66,11 @@
         android:src="@drawable/ic_heart_outline"
         app:tint="@color/text_icons"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/text_song_title"
-        app:layout_constraintBottom_toBottomOf="@+id/text_artist_name"
+        app:layout_constraintTop_toTopOf="@id/text_song_title"
+        app:layout_constraintBottom_toBottomOf="@id/text_artist_name"
         android:contentDescription="Like button" />
 
+    <!-- Album Art with Circular Border and Time -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_album_art_container"
         android:layout_width="0dp"
@@ -76,8 +80,8 @@
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/text_artist_name"
-        app:layout_constraintBottom_toTopOf="@+id/guideline_center"
+        app:layout_constraintTop_toBottomOf="@id/text_artist_name"
+        app:layout_constraintBottom_toTopOf="@+id/player_view"
         app:layout_constraintVertical_bias="0.6">
 
         <com.google.android.material.imageview.ShapeableImageView
@@ -113,16 +117,26 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintVertical_bias="0.8" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline_center"
-        android:layout_width="wrap_content"
+    <!-- ExoPlayer Controller (Seek bar etc.) -->
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/player_view"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.76" />
+        android:layout_marginTop="16dp"
+        android:background="@android:color/transparent"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/layout_album_art_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:use_artwork="false"
+        app:show_shuffle_button="false"
+        app:show_subtitle_button="false"
+        app:show_vr_button="false"
+        tools:ignore="MissingConstraints" />
 
+    <!-- Playback Controls -->
     <LinearLayout
         android:id="@+id/layout_controls"
         android:layout_width="match_parent"
@@ -179,6 +193,5 @@
             android:padding="8dp"
             app:tint="@color/subtle_text_inactive_icons"
             android:contentDescription="Repeat button" />
-
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
