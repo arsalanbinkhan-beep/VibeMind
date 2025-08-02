@@ -7,11 +7,13 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import com.arsalankhan.vibemind.databinding.ActivityMusicPlayerBinding
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.arsalankhan.vibemind.databinding.ActivityMusicPlayerBinding
+import com.bumptech.glide.Glide
+import info.abdolahi.CircularMusicProgressBar
+import info.abdolahi.OnCircularSeekBarChangeListener
 import java.io.File
 import java.io.Serializable
 
@@ -30,7 +32,18 @@ class MusicPlayerActivity : AppCompatActivity() {
     private val updateRunnable = object : Runnable {
         override fun run() {
             val positionMs = exoPlayer.currentPosition
+            val durationMs = exoPlayer.duration
+
+            if (durationMs > 0) {
+                // Update the circular progress bar
+                val progress = (positionMs.toFloat() / durationMs.toFloat()) * 100f
+                binding.musicProgressBar.progress = progress
+            }
+
+            // Update the TextViews for time
             binding.textCurrentTime.text = formatTime(positionMs)
+            binding.textTotalTime.text = formatTime(durationMs)
+
             handler.postDelayed(this, 1000)
         }
     }
@@ -58,7 +71,6 @@ class MusicPlayerActivity : AppCompatActivity() {
 
     private fun setupExoPlayer() {
         exoPlayer = ExoPlayer.Builder(this).build()
-        binding.playerView.player = exoPlayer // ✅ Required to show controls & play UI
 
         exoPlayer.addListener(object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
@@ -75,6 +87,11 @@ class MusicPlayerActivity : AppCompatActivity() {
                 binding.iconPlayPause.setImageResource(
                     if (isPlaying) R.drawable.ic_pause_circle else R.drawable.ic_play_circle
                 )
+                if (isPlaying) {
+                    handler.post(updateRunnable)
+                } else {
+                    handler.removeCallbacks(updateRunnable)
+                }
             }
         })
     }
@@ -91,7 +108,14 @@ class MusicPlayerActivity : AppCompatActivity() {
         exoPlayer.prepare()
         exoPlayer.play()
 
-        // Update UI
+
+        Glide.with(this)
+            .load(song.albumArtUri)
+            .placeholder(R.drawable.album_art)
+            .error(R.drawable.album_art)
+            .into(binding.imageAlbumArt)
+
+        // Update UI text and controls
         binding.textSongTitle.text = song.title
         binding.textArtistName.text = song.artist
         binding.iconPlayPause.setImageResource(R.drawable.ic_pause_circle)
@@ -99,7 +123,6 @@ class MusicPlayerActivity : AppCompatActivity() {
         isLiked = false
         binding.iconHeart.setImageResource(R.drawable.ic_heart_outline)
     }
-
 
     private fun setupControls() {
         binding.iconPlayPause.setOnClickListener {
@@ -133,6 +156,27 @@ class MusicPlayerActivity : AppCompatActivity() {
                 if (isLiked) R.drawable.ic_heart else R.drawable.ic_heart_outline
             )
         }
+
+        // Listener for the circular progress bar to handle seeking
+        binding.musicProgressBar.setOnCircularBarChangeListener(object : OnCircularSeekBarChangeListener {
+            override fun onProgressChanged(circularBar: CircularMusicProgressBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    val durationMs = exoPlayer.duration
+                    if (durationMs > 0) {
+                        val seekPosition = (durationMs * (progress / 100f)).toLong()
+                        exoPlayer.seekTo(seekPosition)
+                    }
+                }
+            }
+
+            override fun onClick(circularBar: CircularMusicProgressBar?) {
+                // Not implementing a click action for the progress bar
+            }
+
+            override fun onLongPress(circularBar: CircularMusicProgressBar?) {
+                // Not implementing a long press action for the progress bar
+            }
+        })
     }
 
     private fun skipToNext() {
@@ -154,16 +198,6 @@ class MusicPlayerActivity : AppCompatActivity() {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         return String.format("%d:%02d", minutes, seconds)
-    }
-
-    override fun onStart() {
-        super.onStart()
-        handler.post(updateRunnable)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        handler.removeCallbacks(updateRunnable)
     }
 
     override fun onDestroy() {

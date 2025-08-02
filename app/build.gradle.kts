@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    kotlin("kapt")
 }
 
 android {
@@ -36,21 +37,21 @@ android {
     viewBinding {
         enable=true
     }
-
 }
+
 
 dependencies {
     implementation("androidx.media3:media3-exoplayer:1.7.1")
     implementation("androidx.media3:media3-exoplayer-dash:1.7.1")
     implementation("androidx.media3:media3-ui:1.7.1")
     implementation("androidx.media3:media3-ui-compose:1.7.1")
+    implementation("com.github.aliab:circular-music-progressbar:1.5.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
 
-    // CHANGED: Using libs.material instead of explicit string
     implementation(libs.material)
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    // Removed the redundant libs.material here, as it's now above
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.recyclerview)
