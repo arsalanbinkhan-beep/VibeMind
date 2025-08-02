@@ -67,5 +67,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         tools:listitem="@layout/item_recommended_song"
         tools:itemCount="8" />
+    <include
+        android:id="@+id/miniPlayerLayout"
+        layout="@layout/layout_mini_player"
+        android:layout_width="0dp"
+        android:layout_height="72dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

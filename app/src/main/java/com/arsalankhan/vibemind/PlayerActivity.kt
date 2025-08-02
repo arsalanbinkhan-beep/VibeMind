@@ -1,27 +1,21 @@
 package com.arsalankhan.vibemind
 
+import android.content.ContentUris
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import com.arsalankhan.vibemind.databinding.ActivityMusicPlayerBinding
 import com.bumptech.glide.Glide
 import info.abdolahi.CircularMusicProgressBar
 import info.abdolahi.OnCircularSeekBarChangeListener
-import java.io.File
-import java.io.Serializable
 
 class MusicPlayerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMusicPlayerBinding
-    private lateinit var exoPlayer: ExoPlayer
-
     private var songList: ArrayList<Song> = arrayListOf()
     private var currentIndex = 0
     private var isShuffle = false
@@ -31,16 +25,14 @@ class MusicPlayerActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private val updateRunnable = object : Runnable {
         override fun run() {
-            val positionMs = exoPlayer.currentPosition
-            val durationMs = exoPlayer.duration
+            val positionMs = PlayerManager.getCurrentPosition()
+            val durationMs = PlayerManager.getDuration()
 
             if (durationMs > 0) {
-                // Update the circular progress bar
-                val progress = (positionMs.toFloat() / durationMs.toFloat()) * 100f
-                binding.musicProgressBar.progress = progress
+                val progressPercent = (positionMs.toFloat() / durationMs.toFloat()) * 100f
+                binding.musicProgressBar.setValue(progressPercent)
             }
 
-            // Update the TextViews for time
             binding.textCurrentTime.text = formatTime(positionMs)
             binding.textTotalTime.text = formatTime(durationMs)
 
@@ -53,36 +45,28 @@ class MusicPlayerActivity : AppCompatActivity() {
         binding = ActivityMusicPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Get song list and selected index from intent
+        PlayerManager.init(this)
+
         @Suppress("UNCHECKED_CAST")
         songList = intent.getSerializableExtra("SONG_LIST") as? ArrayList<Song> ?: arrayListOf()
         currentIndex = intent.getIntExtra("SELECTED_INDEX", 0)
 
-        setupExoPlayer()
         setupControls()
 
-        if (songList.isNotEmpty()) {
-            playSong(currentIndex)
-        } else {
-            Toast.makeText(this, "No songs to play", Toast.LENGTH_SHORT).show()
-            finish()
-        }
-    }
-
-    private fun setupExoPlayer() {
-        exoPlayer = ExoPlayer.Builder(this).build()
-
-        exoPlayer.addListener(object : Player.Listener {
-            override fun onPlaybackStateChanged(state: Int) {
-                if (state == Player.STATE_ENDED) {
-                    if (isRepeat) {
-                        playSong(currentIndex)
-                    } else {
-                        skipToNext()
-                    }
-                }
+        if (PlayerManager.currentSong == null || PlayerManager.currentIndex != currentIndex) {
+            if (songList.isNotEmpty()) {
+                PlayerManager.playSong(this, songList, currentIndex)
+            } else {
+                Toast.makeText(this, "No songs to play", Toast.LENGTH_SHORT).show()
+                finish()
+                return
             }
+        }
 
+        updateUI(PlayerManager.currentSong!!)
+        setupProgressBarListener()
+
+        PlayerManager.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 binding.iconPlayPause.setImageResource(
                     if (isPlaying) R.drawable.ic_pause_circle else R.drawable.ic_play_circle
@@ -93,43 +77,44 @@ class MusicPlayerActivity : AppCompatActivity() {
                     handler.removeCallbacks(updateRunnable)
                 }
             }
+
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_ENDED) {
+                    if (isRepeat) {
+                        PlayerManager.playSong(this@MusicPlayerActivity, songList, currentIndex)
+                    } else {
+                        skipToNext()
+                    }
+                }
+            }
         })
     }
 
-    private fun playSong(index: Int) {
-        if (index !in songList.indices) return
-
-        val song = songList[index]
-        val songUri = Uri.fromFile(File(song.path))
-        Log.d("MusicPlayer", "Playing: ${song.title}, URI: $songUri")
-
-        val mediaItem = MediaItem.fromUri(songUri)
-        exoPlayer.setMediaItem(mediaItem)
-        exoPlayer.prepare()
-        exoPlayer.play()
-
+    private fun updateUI(song: Song) {
+        val albumArtUri = ContentUris.withAppendedId(
+            Uri.parse("content://media/external/audio/albumart"),
+            song.albumId
+        )
 
         Glide.with(this)
-            .load(song.albumArtUri)
+            .load(albumArtUri)
             .placeholder(R.drawable.album_art)
             .error(R.drawable.album_art)
             .into(binding.imageAlbumArt)
 
-        // Update UI text and controls
         binding.textSongTitle.text = song.title
         binding.textArtistName.text = song.artist
         binding.iconPlayPause.setImageResource(R.drawable.ic_pause_circle)
-
         isLiked = false
         binding.iconHeart.setImageResource(R.drawable.ic_heart_outline)
     }
 
     private fun setupControls() {
         binding.iconPlayPause.setOnClickListener {
-            if (exoPlayer.isPlaying) {
-                exoPlayer.pause()
+            if (PlayerManager.isPlaying()) {
+                PlayerManager.pause()
             } else {
-                exoPlayer.play()
+                PlayerManager.play()
             }
         }
 
@@ -156,26 +141,22 @@ class MusicPlayerActivity : AppCompatActivity() {
                 if (isLiked) R.drawable.ic_heart else R.drawable.ic_heart_outline
             )
         }
+    }
 
-        // Listener for the circular progress bar to handle seeking
+    private fun setupProgressBarListener() {
         binding.musicProgressBar.setOnCircularBarChangeListener(object : OnCircularSeekBarChangeListener {
             override fun onProgressChanged(circularBar: CircularMusicProgressBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    val durationMs = exoPlayer.duration
+                    val durationMs = PlayerManager.getDuration()
                     if (durationMs > 0) {
                         val seekPosition = (durationMs * (progress / 100f)).toLong()
-                        exoPlayer.seekTo(seekPosition)
+                        PlayerManager.seekTo(seekPosition)
                     }
                 }
             }
 
-            override fun onClick(circularBar: CircularMusicProgressBar?) {
-                // Not implementing a click action for the progress bar
-            }
-
-            override fun onLongPress(circularBar: CircularMusicProgressBar?) {
-                // Not implementing a long press action for the progress bar
-            }
+            override fun onClick(circularBar: CircularMusicProgressBar?) {}
+            override fun onLongPress(circularBar: CircularMusicProgressBar?) {}
         })
     }
 
@@ -185,12 +166,14 @@ class MusicPlayerActivity : AppCompatActivity() {
         } else {
             (currentIndex + 1) % songList.size
         }
-        playSong(currentIndex)
+        PlayerManager.playSong(this, songList, currentIndex)
+        updateUI(songList[currentIndex])
     }
 
     private fun skipToPrevious() {
         currentIndex = if (currentIndex - 1 < 0) songList.size - 1 else currentIndex - 1
-        playSong(currentIndex)
+        PlayerManager.playSong(this, songList, currentIndex)
+        updateUI(songList[currentIndex])
     }
 
     private fun formatTime(ms: Long): String {
@@ -202,6 +185,6 @@ class MusicPlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        exoPlayer.release()
+        handler.removeCallbacks(updateRunnable)
     }
 }

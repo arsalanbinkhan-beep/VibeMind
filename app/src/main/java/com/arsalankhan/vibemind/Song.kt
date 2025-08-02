@@ -1,7 +1,7 @@
 package com.arsalankhan.vibemind
 
+import android.net.Uri
 import java.io.Serializable
-
 
 data class Song(
     val id: Long,
@@ -11,4 +11,8 @@ data class Song(
     val duration: Long,
     val albumId: Long,
     val category: String
-) : Serializable
+) : Serializable {
+    val albumArtUri: Uri
+        get() = Uri.parse("content://media/external/audio/albumart").buildUpon()
+            .appendPath(albumId.toString()).build()
+}

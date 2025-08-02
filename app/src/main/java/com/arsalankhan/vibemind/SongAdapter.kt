@@ -1,10 +1,10 @@
 package com.arsalankhan.vibemind
 
-import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.arsalankhan.vibemind.databinding.ItemSongBinding
+import com.bumptech.glide.Glide
 
 class SongAdapter(
     private val songList: ArrayList<Song>,
@@ -24,10 +24,20 @@ class SongAdapter(
 
         binding.tvSongTitle.text = song.title
         binding.tvSongCategory.text = song.artist
-        binding.ivSongIcon.setImageResource(R.drawable.ic_song_placeholder)
 
-        binding.root.setOnClickListener { onSongClick(songList, position) }
-        binding.ivPlayRecommended.setOnClickListener { onSongClick(songList, position) }
+        Glide.with(binding.root.context)
+            .load(song.albumArtUri)
+            .placeholder(R.drawable.ic_album_art) // fallback image
+            .into(binding.ivSongIcon)
+
+        // Click listeners
+        binding.root.setOnClickListener {
+            onSongClick(songList, position)
+        }
+
+        binding.ivPlayRecommended.setOnClickListener {
+            onSongClick(songList, position)
+        }
     }
 
     override fun getItemCount(): Int = songList.size

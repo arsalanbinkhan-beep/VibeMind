@@ -41,13 +41,15 @@ android {
 
 
 dependencies {
-    implementation("androidx.media3:media3-exoplayer:1.7.1")
-    implementation("androidx.media3:media3-exoplayer-dash:1.7.1")
-    implementation("androidx.media3:media3-ui:1.7.1")
-    implementation("androidx.media3:media3-ui-compose:1.7.1")
+    implementation("androidx.media3:media3-exoplayer:1.8.0")
+    implementation("androidx.media3:media3-exoplayer-dash:1.8.0")
+    implementation("androidx.media3:media3-ui:1.8.0")
+    implementation("androidx.media3:media3-ui-compose:1.8.0")
     implementation("com.github.aliab:circular-music-progressbar:1.5.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     kapt("com.github.bumptech.glide:compiler:4.16.0")
+
+
 
     implementation(libs.material)
     implementation(libs.androidx.core.ktx)
