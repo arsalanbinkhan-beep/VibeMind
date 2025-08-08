@@ -6,7 +6,7 @@ import com.arsalankhan.vibemind.databinding.LayoutMiniPlayerBinding
 
 open class BaseActivity : AppCompatActivity() {
     private var _miniPlayerBinding: LayoutMiniPlayerBinding? = null
-    protected val miniPlayerBinding get() = _miniPlayerBinding
+    protected open val miniPlayerBinding get() = _miniPlayerBinding
 
     fun attachMiniPlayer(binding: LayoutMiniPlayerBinding) {
         _miniPlayerBinding = binding

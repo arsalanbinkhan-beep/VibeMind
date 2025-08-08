@@ -9,8 +9,7 @@ data class Song(
     val artist: String,
     val path: String,
     val duration: Long,
-    val albumId: Long,
-    val category: String
+    val albumId: Long
 ) : Serializable {
     val albumArtUri: Uri
         get() = Uri.parse("content://media/external/audio/albumart").buildUpon()
