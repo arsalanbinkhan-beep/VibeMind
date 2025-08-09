@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/background">
 
+    <!-- Menu icon -->
     <ImageView
         android:id="@+id/icon_menu"
         android:layout_width="wrap_content"
@@ -18,6 +19,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/text_icons" />
 
+    <!-- More options icon -->
     <ImageView
         android:id="@+id/icon_more_options"
         android:layout_width="wrap_content"
@@ -29,6 +31,23 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="@color/text_icons" />
+
+    <!-- Heart icon moved to top-right -->
+
+    <!-- Song title -->
+
+    <ImageView
+        android:id="@+id/icon_heart"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="Like song button"
+        android:src="@drawable/ic_heart_outline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/icon_more_options"
+        app:tint="@color/subtle_text_inactive_icons" />
+
 
     <TextView
         android:id="@+id/text_song_title"
@@ -43,6 +62,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/icon_menu" />
 
+    <!-- Artist name -->
     <TextView
         android:id="@+id/text_artist_name"
         android:layout_width="wrap_content"
@@ -55,58 +75,34 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_song_title" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/layout_album_art_container"
+    <!-- Album art -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/image_album_art"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="48dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="48dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toTopOf="@id/layout_controls"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="Album art"
+        android:scaleType="centerCrop"
+        android:src="@drawable/album_art"
+        app:layout_constraintBottom_toTopOf="@id/layout_middle_row"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_artist_name">
+        app:layout_constraintTop_toBottomOf="@id/text_artist_name"
+        app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent" />
 
-        <info.abdolahi.CircularMusicProgressBar
-            android:id="@+id/musicProgressBar"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:border_color="#80CBC4"
-            app:border_width="3dp"
-            app:centercircle_diammterer="0.8"
-            app:enable_touch="true"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:progress_color="#FF4081"
-            app:progress_startAngle="270" />
-
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/image_album_art"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:contentDescription="Album art"
-            android:scaleType="centerCrop"
-            android:src="@drawable/album_art"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
+    <!-- Middle row -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_middle_row"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintBottom_toTopOf="@id/layout_controls"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/seek_bar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
@@ -129,22 +125,25 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
-
-        <ImageView
-            android:id="@+id/icon_heart"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_heart_outline"
-            app:tint="@color/subtle_text_inactive_icons"
-            android:contentDescription="Like song button"
-            app:layout_constraintStart_toEndOf="@id/text_current_time"
-            app:layout_constraintEnd_toStartOf="@id/text_total_time"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- SeekBar -->
+    <SeekBar
+        android:id="@+id/seek_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
+        android:progress="0"
+        android:max="100"
+        android:thumbTint="@color/text_icons"
+        android:progressTint="@color/text_icons"
+        app:layout_constraintBottom_toTopOf="@id/layout_controls"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Bottom controls -->
     <LinearLayout
         android:id="@+id/layout_controls"
         android:layout_width="match_parent"

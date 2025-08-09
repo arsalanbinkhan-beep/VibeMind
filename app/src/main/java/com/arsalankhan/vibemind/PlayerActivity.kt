@@ -5,13 +5,12 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.Player
 import com.arsalankhan.vibemind.databinding.ActivityMusicPlayerBinding
 import com.bumptech.glide.Glide
-import info.abdolahi.CircularMusicProgressBar
-import info.abdolahi.OnCircularSeekBarChangeListener
 
 class MusicPlayerActivity : AppCompatActivity() {
 
@@ -29,8 +28,8 @@ class MusicPlayerActivity : AppCompatActivity() {
             val durationMs = PlayerManager.getDuration()
 
             if (durationMs > 0) {
-                val progressPercent = (positionMs.toFloat() / durationMs.toFloat()) * 100f
-                binding.musicProgressBar.setValue(progressPercent)
+                val progressPercent = (positionMs.toFloat() / durationMs) * 100f
+                binding.seekBar.progress = progressPercent.toInt()
             }
 
             binding.textCurrentTime.text = formatTime(positionMs)
@@ -52,6 +51,7 @@ class MusicPlayerActivity : AppCompatActivity() {
         currentIndex = intent.getIntExtra("SELECTED_INDEX", 0)
 
         setupControls()
+        setupSeekBar()
 
         if (PlayerManager.currentSong == null || PlayerManager.currentIndex != currentIndex) {
             if (songList.isNotEmpty()) {
@@ -64,7 +64,6 @@ class MusicPlayerActivity : AppCompatActivity() {
         }
 
         updateUI(PlayerManager.currentSong!!)
-        setupProgressBarListener()
 
         PlayerManager.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -107,6 +106,16 @@ class MusicPlayerActivity : AppCompatActivity() {
         binding.iconPlayPause.setImageResource(R.drawable.ic_pause_circle)
         isLiked = false
         binding.iconHeart.setImageResource(R.drawable.ic_heart_outline)
+
+        val durationMs = PlayerManager.getDuration()
+        binding.textTotalTime.text = formatTime(durationMs)
+
+        val positionMs = PlayerManager.getCurrentPosition()
+        binding.textCurrentTime.text = formatTime(positionMs)
+        if (durationMs > 0) {
+            val progressPercent = (positionMs.toFloat() / durationMs) * 100f
+            binding.seekBar.progress = progressPercent.toInt()
+        }
     }
 
     private fun setupControls() {
@@ -143,20 +152,21 @@ class MusicPlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupProgressBarListener() {
-        binding.musicProgressBar.setOnCircularBarChangeListener(object : OnCircularSeekBarChangeListener {
-            override fun onProgressChanged(circularBar: CircularMusicProgressBar?, progress: Int, fromUser: Boolean) {
+    private fun setupSeekBar() {
+        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     val durationMs = PlayerManager.getDuration()
                     if (durationMs > 0) {
                         val seekPosition = (durationMs * (progress / 100f)).toLong()
                         PlayerManager.seekTo(seekPosition)
+                        binding.textCurrentTime.text = formatTime(seekPosition)
                     }
                 }
             }
 
-            override fun onClick(circularBar: CircularMusicProgressBar?) {}
-            override fun onLongPress(circularBar: CircularMusicProgressBar?) {}
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
     }
 

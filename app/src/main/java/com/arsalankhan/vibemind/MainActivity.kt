@@ -168,8 +168,22 @@ class MainActivity : BaseActivity() {
     }
 
     private fun updateLastPlayedSection() {
-        val topPlayed = PlaybackHistoryManager.getTopPlayedSongs(this, allSongs)
-            .take(3)
+        val prefs = getSharedPreferences("LAST_PLAYED", MODE_PRIVATE)
+        val jsonList = prefs.getString("songs", "[]")
+        val songList = mutableListOf<Song>()
+
+        try {
+            val jsonArray = org.json.JSONArray(jsonList)
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
+                val song = allSongs.find { it.id == obj.getLong("id") }
+                if (song != null) {
+                    songList.add(song)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         val songClickListener = { list: ArrayList<Song>, index: Int ->
             val selectedSong = list[index]
@@ -183,8 +197,9 @@ class MainActivity : BaseActivity() {
         }
 
         binding.recyclerViewLastPlayedSongs.adapter =
-            LastPlayedAdapter(ArrayList(topPlayed), songClickListener)
+            LastPlayedAdapter(ArrayList(songList), songClickListener)
     }
+
 
     private fun setupCategoryButtonListeners(songClickListener: (ArrayList<Song>, Int) -> Unit) {
         binding.categoryPop.setOnClickListener {
@@ -234,47 +249,79 @@ class MainActivity : BaseActivity() {
 
     private fun saveLastPlayedSong(song: Song) {
         val prefs = getSharedPreferences("LAST_PLAYED", MODE_PRIVATE)
-        prefs.edit().apply {
-            putLong("id", song.id)
-            putString("title", song.title)
-            putString("artist", song.artist)
-            putString("path", song.path)
-            putLong("duration", song.duration)
-            putLong("albumId", song.albumId)
-            // The 'category' property doesn't exist, so this line is removed.
-            apply()
+        val jsonList = prefs.getString("songs", "[]")
+        val songList = mutableListOf<Song>()
+
+        try {
+            val jsonArray = org.json.JSONArray(jsonList)
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
+                songList.add(
+                    Song(
+                        id = obj.getLong("id"),
+                        title = obj.getString("title"),
+                        artist = obj.getString("artist"),
+                        path = obj.getString("path"),
+                        duration = obj.getLong("duration"),
+                        albumId = obj.getLong("albumId")
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+
+        // Remove if already exists
+        songList.removeAll { it.id == song.id }
+
+        // Add to top
+        songList.add(0, song)
+
+        // Keep only 3
+        if (songList.size > 3) {
+            songList.subList(3, songList.size).clear()
+        }
+
+        // Save back
+        val newJsonArray = org.json.JSONArray()
+        songList.forEach {
+            val obj = org.json.JSONObject().apply {
+                put("id", it.id)
+                put("title", it.title)
+                put("artist", it.artist)
+                put("path", it.path)
+                put("duration", it.duration)
+                put("albumId", it.albumId)
+            }
+            newJsonArray.put(obj)
+        }
+
+        prefs.edit().putString("songs", newJsonArray.toString()).apply()
     }
+
 
     private fun loadLastPlayedSong() {
         val prefs = getSharedPreferences("LAST_PLAYED", MODE_PRIVATE)
-        val id = prefs.getLong("id", -1L)
-        val title = prefs.getString("title", null)
-        val artist = prefs.getString("artist", null)
-        val path = prefs.getString("path", null)
-        val duration = prefs.getLong("duration", -1L)
-        val albumId = prefs.getLong("albumId", -1L)
-        // The 'category' property doesn't exist, so this line is removed.
+        val jsonList = prefs.getString("songs", "[]")
 
-        if (id != -1L && !title.isNullOrEmpty() && !artist.isNullOrEmpty() &&
-            !path.isNullOrEmpty() && duration > 0 && albumId != -1L) {
-
-            val song = Song(
-                id = id,
-                title = title,
-                artist = artist,
-                path = path,
-                duration = duration,
-                albumId = albumId
-            )
-
-            val songIndex = allSongs.indexOfFirst { it.id == song.id }
-            if (songIndex != -1) {
-                PlayerManager.playSong(this, allSongs, songIndex)
-                MiniPlayerManager.refresh(this)
+        try {
+            val jsonArray = org.json.JSONArray(jsonList)
+            if (jsonArray.length() > 0) {
+                val obj = jsonArray.getJSONObject(0)
+                val song = allSongs.find { it.id == obj.getLong("id") }
+                if (song != null) {
+                    val songIndex = allSongs.indexOfFirst { it.id == song.id }
+                    if (songIndex != -1) {
+                        PlayerManager.playSong(this, allSongs, songIndex)
+                        MiniPlayerManager.refresh(this)
+                    }
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
