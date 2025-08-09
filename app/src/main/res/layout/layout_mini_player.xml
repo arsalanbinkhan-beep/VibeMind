@@ -5,6 +5,7 @@
     android:id="@+id/miniPlayer"
     android:layout_width="match_parent"
     android:layout_height="75dp"
+    android:fitsSystemWindows="true"
     android:background="@drawable/nav_bar_background_blur">
 
     <ImageView
@@ -68,7 +69,7 @@
         android:layout_height="32dp"
         android:layout_marginEnd="16dp"
         android:contentDescription="@string/play_pause"
-        android:src="@drawable/ic_play_pause"
+        android:src="@drawable/ic_play_circle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

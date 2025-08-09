@@ -10,6 +10,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.arsalankhan.vibemind.databinding.ActivityMainBinding
+import java.io.Serializable // Import for Serializable
 
 class MainActivity : BaseActivity() {
 
@@ -28,8 +29,25 @@ class MainActivity : BaseActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // ✅ Attach the mini player to BaseActivity
+        // Attach the mini player to BaseActivity
         attachMiniPlayer(binding.miniPlayer)
+
+
+        binding.miniPlayer.root.setOnClickListener {
+            val intent = Intent(this, MusicPlayerActivity::class.java)
+
+            // Pass the current song list and index from your PlayerManager
+            PlayerManager.songList?.let { songList ->
+                intent.putExtra("SONG_LIST", songList as java.io.Serializable)
+                intent.putExtra("SELECTED_INDEX", PlayerManager.currentIndex)
+            }
+
+            startActivity(intent)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_in_up, R.anim.slide_out_down) // Changed to slide animations
+            startActivity(intent, options.toBundle())
+
+
+        }
 
         setupNavBarListeners()
         checkAndLoadSongs()
@@ -44,19 +62,19 @@ class MainActivity : BaseActivity() {
 
         binding.ivAlbum.setOnClickListener {
             val intent = Intent(this, PlaylistAlbumActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_in_up, R.anim.slide_out_down) // Changed to slide animations
             startActivity(intent, options.toBundle())
         }
 
         binding.ivSearch.setOnClickListener {
             val intent = Intent(this, SearchActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_in_up, R.anim.slide_out_down) // Changed to slide animations
             startActivity(intent, options.toBundle())
         }
 
         binding.ivSettings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_in_up, R.anim.slide_out_down) // Changed to slide animations
             startActivity(intent, options.toBundle())
         }
     }
@@ -93,7 +111,7 @@ class MainActivity : BaseActivity() {
                 PlaybackHistoryManager.incrementPlayCount(this, selectedSong.path)
                 saveLastPlayedSong(selectedSong)
                 updateLastPlayedSection()
-                MiniPlayerManager.refresh(this) // ✅ Refresh mini player UI
+                MiniPlayerManager.refresh(this) // Refresh mini player UI
             }
         }
 
@@ -119,9 +137,9 @@ class MainActivity : BaseActivity() {
         return allSongs.shuffled().distinctBy { it.title }.take(5)
     }
 
-     private fun updateLastPlayedSection() {
+    private fun updateLastPlayedSection() {
         val topPlayed = PlaybackHistoryManager.getTopPlayedSongs(this, allSongs)
-            .take(3) // ✅ Limit to last 3 songs only
+            .take(3) // Limit to last 3 songs only
 
         val songClickListener = { list: ArrayList<Song>, index: Int ->
             val selectedSong = list[index]
@@ -140,6 +158,8 @@ class MainActivity : BaseActivity() {
 
 
     private fun setupCategoryButtonListeners(songClickListener: (ArrayList<Song>, Int) -> Unit) {
+        // Assuming you have IDs for your category buttons in activity_main.xml
+        // e.g., android:id="@+id/categoryPop"
         binding.categoryPop.setOnClickListener {
             binding.recyclerViewSongs.adapter = SongAdapter(ArrayList(popSongs), songClickListener)
         }
@@ -207,4 +227,42 @@ class MainActivity : BaseActivity() {
             loadAndCategorizeSongs()
         }
     }
+
+    //make the play pause button change when pressed
+    override fun onResume() {
+        super.onResume()
+        // Refresh the mini player UI when returning to MainActivity
+        MiniPlayerManager.refresh(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Clear the mini player binding to avoid memory leaks
+        miniPlayerBinding?.let {
+            MiniPlayerManager.bindMiniPlayer(this, it)
+        }
+    }
+
+    // Use OnBackPressedDispatcher for modern back handling
+    override fun onBackPressed() {
+        if (miniPlayerBinding?.root?.visibility == android.view.View.VISIBLE) {
+            miniPlayerBinding?.root?.visibility = android.view.View.GONE
+        } else {
+            // Use the dispatcher for backward compatibility
+            onBackPressedDispatcher.onBackPressed()
+        }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        // Handle the up navigation
+        onBackPressedDispatcher.onBackPressed()
+        return true
+    }
+
+    //give the mini player a click listener to open the music player activity and animation of slide up
+
+
+
+
+
 }

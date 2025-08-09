@@ -56,7 +56,36 @@ object MiniPlayerManager {
     private fun updatePlayPauseIcon() {
         binding?.ivPlayPause?.setImageResource(
             if (PlayerManager.isPlaying()) R.drawable.ic_pause_circle
-            else R.drawable.ic_play_pause
+            else R.drawable.ic_play_circle
         )
     }
+
+    fun unbindMiniPlayer() {
+        binding = null
+    }
+    fun isMiniPlayerBound(): Boolean {
+        return binding != null
+    }
+    fun getMiniPlayerBinding(): LayoutMiniPlayerBinding? {
+        return binding
+    }
+    fun setMiniPlayerBinding(miniBinding: LayoutMiniPlayerBinding) {
+        binding = miniBinding
+    }
+    fun clearMiniPlayerBinding() {
+        binding = null
+    }
+    fun isMiniPlayerVisible(): Boolean {
+        return binding?.root?.visibility == View.VISIBLE
+    }
+    fun setMiniPlayerVisibility(visible: Boolean) {
+        binding?.root?.visibility = if (visible) View.VISIBLE else View.GONE
+    }
+    fun getMiniPlayerView(): View? {
+        return binding?.root
+    }
+    fun getMiniPlayerSongTitle(): String? {
+        return binding?.tvSongTitle?.text?.toString()
+    }
+
 }
