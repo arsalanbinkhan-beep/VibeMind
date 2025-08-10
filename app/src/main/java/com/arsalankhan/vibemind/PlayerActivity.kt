@@ -30,6 +30,7 @@ class MusicPlayerActivity : AppCompatActivity() {
             if (durationMs > 0) {
                 val progressPercent = (positionMs.toFloat() / durationMs) * 100f
                 binding.seekBar.progress = progressPercent.toInt()
+                binding.circularProgress.progress = progressPercent.toInt()
             }
 
             binding.textCurrentTime.text = formatTime(positionMs)
