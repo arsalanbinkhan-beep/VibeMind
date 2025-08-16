@@ -268,6 +268,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:checked="true"
+                    android:minHeight="48dp"
                     android:text="@string/setting_auto_scan_on_launch"
                     android:textColor="@color/text_icons"
                     android:thumbTint="@color/accent_1_interactive_elements"
@@ -289,6 +290,7 @@
                     android:layout_marginBottom="16dp"
                     android:backgroundTint="@color/accent_1_interactive_elements"
                     android:entries="@array/sort_order_options"
+                    android:minHeight="48dp"
                     android:popupBackground="@color/semi_transparent_secondary_background" />
 
                 <Switch
@@ -296,6 +298,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:checked="false"
+                    android:minHeight="48dp"
                     android:text="@string/setting_show_hidden_audio"
                     android:textColor="@color/text_icons"
                     android:thumbTint="@color/accent_1_interactive_elements"
@@ -347,6 +350,18 @@
                     app:cornerRadius="8dp"
                     app:strokeColor="@color/subtle_text_inactive_icons"
                     app:strokeWidth="1dp" />
+                <Button
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:backgroundTint="@android:color/transparent"
+                    android:id="@+id/btnClearLastPlayed"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Clear Last Played Songs"
+                    android:textColor="@color/text_icons"
+                    app:cornerRadius="8dp"
+                    app:strokeColor="@color/subtle_text_inactive_icons"
+                    app:strokeWidth="1dp"/>
+
             </LinearLayout>
 
             <TextView

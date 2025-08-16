@@ -9,7 +9,8 @@ data class Song(
     val artist: String,
     val path: String,
     val duration: Long,
-    val albumId: Long
+    val albumId: Long,
+    var isLiked: Boolean = false // Add this field
 ) : Serializable {
     val albumArtUri: Uri
         get() = Uri.parse("content://media/external/audio/albumart").buildUpon()

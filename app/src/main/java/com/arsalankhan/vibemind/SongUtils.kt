@@ -9,6 +9,8 @@ class SongUtils {
     fun getAllAudioFiles(context: Context): ArrayList<Song> {
         val songList = ArrayList<Song>()
         val contentResolver = context.contentResolver
+        val prefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+        val showHidden = prefs.getBoolean("show_hidden", false)
 
         val uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
         val projection = arrayOf(
@@ -20,8 +22,19 @@ class SongUtils {
             MediaStore.Audio.Media.ALBUM_ID
         )
 
-        val selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
-        val sortOrder = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
+        // Add hidden files filter if needed
+        var selection = "${MediaStore.Audio.Media.IS_MUSIC} != 0"
+        if (!showHidden) {
+            selection += " AND ${MediaStore.Audio.Media.DATA} NOT LIKE '%.%'"
+        }
+
+        // Get sort order from preferences
+        val sortOrder = when (prefs.getInt("sort_order", 0)) {
+            0 -> MediaStore.Audio.Media.TITLE + " ASC"
+            1 -> MediaStore.Audio.Media.ARTIST + " ASC"
+            2 -> MediaStore.Audio.Media.DATE_ADDED + " DESC"
+            else -> MediaStore.Audio.Media.TITLE + " ASC"
+        }
 
         val cursor = contentResolver.query(uri, projection, selection, null, sortOrder)
 

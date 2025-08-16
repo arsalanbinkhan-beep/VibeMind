@@ -14,8 +14,18 @@ import com.arsalankhan.vibemind.databinding.ActivityMusicPlayerBinding
 import com.bumptech.glide.Glide
 import kotlin.math.atan2
 import kotlin.math.roundToInt
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import kotlin.math.sqrt
+private lateinit var sensorManager: SensorManager
+private var lastShakeTime = 0L
+private lateinit var sensorListener: SensorEventListener
 
+@Suppress("DEPRECATION")
 class MusicPlayerActivity : AppCompatActivity() {
+
 
     private lateinit var binding: ActivityMusicPlayerBinding
     private var songList: ArrayList<Song> = arrayListOf()
@@ -48,6 +58,29 @@ class MusicPlayerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMusicPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+        sensorListener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent?) {
+                if (event == null) return
+                val x = event.values[0]
+                val y = event.values[1]
+                val z = event.values[2]
+
+                val acceleration = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+                val now = System.currentTimeMillis()
+
+                if (acceleration > 15 && now - lastShakeTime > 1000) {
+                    lastShakeTime = now
+                    skipToNext() // 👈 Your existing method
+                }
+            }
+
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+        }
+
+        sensorManager.registerListener(sensorListener, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
 
 
         PlayerManager.init(this)
@@ -102,6 +135,7 @@ class MusicPlayerActivity : AppCompatActivity() {
             }
         })
     }
+
 
     private fun updateUI(song: Song) {
         val albumArtUri = ContentUris.withAppendedId(
@@ -190,7 +224,7 @@ class MusicPlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun skipToNext() {
+     fun skipToNext() {
         currentIndex = if (isShuffle) (songList.indices).random()
         else (currentIndex + 1) % songList.size
 
@@ -198,7 +232,7 @@ class MusicPlayerActivity : AppCompatActivity() {
         updateUI(songList[currentIndex])
     }
 
-    private fun skipToPrevious() {
+     fun skipToPrevious() {
         currentIndex = if (currentIndex - 1 < 0) songList.size - 1 else currentIndex - 1
         PlayerManager.playSong(this, songList, currentIndex)
         updateUI(songList[currentIndex])
@@ -211,16 +245,29 @@ class MusicPlayerActivity : AppCompatActivity() {
         return String.format("%d:%02d", minutes, seconds)
     }
 
-    override fun onPause() { // 🔥 Save state
+    override fun onPause() {
         super.onPause()
         prefs.edit()
-            .putInt("last_index", PlayerManager.currentIndex) // no ()
+            .putInt("last_index", PlayerManager.currentIndex)
             .putLong("last_position", PlayerManager.getCurrentPosition())
             .apply()
+
+        // ✅ Important: unregister the shake listener
+        sensorManager.unregisterListener(sensorListener)
     }
+
 
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacks(updateRunnable)
     }
+    companion object {
+        fun skipToNext(context: android.content.Context) {
+            if (PlayerManager.songList.isNotEmpty()) {
+                val nextIndex = (PlayerManager.currentIndex + 1) % PlayerManager.songList.size
+                PlayerManager.playSong(context, PlayerManager.songList, nextIndex)
+            }
+        }
+    }
+
 }

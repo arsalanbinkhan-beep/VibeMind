@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Options for Audio Quality Spinner -->
+    <!-- Audio Quality Options -->
     <string-array name="audio_quality_options">
         <item>Auto</item>
         <item>Low (64kbps)</item>
@@ -9,7 +9,7 @@
         <item>Lossless (FLAC/ALAC)</item>
     </string-array>
 
-    <!-- Options for Sort Order Spinner -->
+    <!-- Sort Order Options -->
     <string-array name="sort_order_options">
         <item>Name (A-Z)</item>
         <item>Date Added (Newest First)</item>

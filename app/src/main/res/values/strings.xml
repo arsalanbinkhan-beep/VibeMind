@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">VibeMind</string> <string name="motive_title">Motives</string>
+    <string name="app_name">VibeMind</string>
+    <string name="motive_title">Motives</string>
     <string name="category_title">Category</string>
     <string name="songs_title">Songs</string>
     <string name="recommended_songs_title">Recommended Songs</string>
@@ -25,43 +26,53 @@
     <string name="add_to_favorites">Add to Favorites</string>
     <string name="play_pause">Play/Pause</string>
 
-
     <string name="settings_title">Settings</string>
 
+    <!-- Playback Settings -->
     <string name="playback_settings_section_title">Playback Settings</string>
     <string name="setting_audio_quality_title">Audio Quality</string>
-    <string name="setting_equalizer_title">Equalizer</string>
-    <string name="setting_equalizer_system">Use System Equalizer</string>
-    <string name="setting_equalizer_custom">Use Custom Equalizer</string>
     <string name="setting_crossfade_title">Crossfade Between Songs</string>
-    <string name="setting_crossfade_duration_default">0 seconds</string> <string name="setting_gapless_playback">Gapless Playback</string>
+    <string name="setting_crossfade_duration_default">No crossfade</string>
+    <string name="setting_gapless_playback">Gapless Playback</string>
     <string name="setting_replay_gain">Normalize Volume (Replay Gain)</string>
     <string name="setting_shake_to_change_song">Shake to Change Song</string>
-    <string name="setting_shake_sensitivity_default">Sensitivity: 50%</string> <string name="library_settings_section_title">Library Settings</string>
+    <string name="setting_shake_sensitivity_default">Sensitivity: 50%</string>
+
+    <!-- Library Settings -->
+    <string name="library_settings_section_title">Library Settings</string>
     <string name="button_scan_local_music">Scan Local Music Now</string>
     <string name="button_choose_folders">Choose Folders to Include/Exclude</string>
     <string name="setting_auto_scan_on_launch">Auto Scan on Launch</string>
     <string name="setting_default_sort_order">Default Sort Order</string>
-    <string name="setting_show_hidden_audio">Show Hidden Audio Files (WhatsApp, Telegram, etc.)</string>
+    <string name="setting_show_hidden_audio">Show Hidden Audio Files</string>
 
+    <!-- Storage/Cache -->
     <string name="storage_cache_section_title">Storage / Cache</string>
     <string name="button_clear_album_art_cache">Clear Album Art Cache</string>
     <string name="button_clear_history">Clear Recently Played / Search History</string>
 
+    <!-- Notifications -->
     <string name="notifications_section_title">Notifications</string>
     <string name="setting_show_media_controls">Show Media Controls in Notification</string>
     <string name="setting_notification_style_title">Notification Style</string>
     <string name="setting_notification_style_compact">Compact</string>
     <string name="setting_notification_style_expanded">Expanded</string>
 
-    <string name="headphone_audio_output_section_title">Headphone &amp; Audio Output</string> <string name="setting_resume_on_headphone_plugin">Resume on Headphone Plug-in</string>
+    <!-- Headphone/Audio Output -->
+    <string name="headphone_audio_output_section_title">Headphone &amp; Audio Output</string>
+    <string name="setting_resume_on_headphone_plugin">Resume on Headphone Plug-in</string>
     <string name="setting_pause_on_headphone_disconnect">Pause on Headphone Disconnect</string>
     <string name="setting_bluetooth_autoplay">Bluetooth Auto-play</string>
 
+    <!-- About/Help -->
     <string name="about_help_section_title">About / Help</string>
-    <string name="about_app_version">App Version: 1.0.0</string> <string name="about_developer_info">Developer: Your Name/Company</string> <string name="about_rate_app">Rate the app</string>
-    <string name="about_feedback_bug_report">Feedback / Bug report</string>
-    <string name="about_open_source_licenses">Open source licenses</string>
+    <string name="about_app_version">VibeMind %1$s</string>
+    <string name="about_developer_info">Developed by Arsalan Khan</string>
+    <string name="about_rate_app">Rate VibeMind</string>
+    <string name="about_feedback_bug_report">Feedback &amp; Bug Report</string>
+    <string name="about_open_source_licenses">Open Source Licenses</string>
+
+    <!-- Other strings -->
     <string name="song_icon">Album art or song icon</string>
     <string name="play_song">Play song</string>
     <string name="song_name">Song Name</string>
@@ -69,4 +80,22 @@
     <string name="menu_icon">Menu icon</string>
     <string name="more_options_icon">More options icon</string>
 
+    <!-- Crossfade Duration (Plural) -->
+    <plurals name="seconds">
+        <item quantity="one">%d second</item>
+        <item quantity="other">%d seconds</item>
+    </plurals>
+
+    <!-- Shake sensitivity -->
+    <string name="shake_sensitivity">%d%%</string>
+    <string name="setting_equalizer_title">Equalizer</string>
+    <string name="setting_equalizer_system">Use System Equalizer</string>
+    <string name="setting_equalizer_custom">Custom Equalizer</string>
+    <!-- For sort order spinner -->
+
+
+    <!-- For headphone controls -->
+    <string name="headphone_resume">Resume on headphone plug</string>
+    <string name="headphone_pause">Pause on headphone unplug</string>
+    <string name="bluetooth_autoplay">Auto-play on Bluetooth connect</string>
 </resources>

@@ -21,6 +21,7 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="0dp"
         android:layout_marginStart="0dp" />
+
     <TextView
         android:id="@+id/tv_greeting"
         android:layout_width="wrap_content"
@@ -29,10 +30,24 @@
         android:textColor="#F5F0FF"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="@+id/btnBack"
-        app:layout_constraintBottom_toBottomOf="@+id/btnBack"
-        app:layout_constraintStart_toEndOf="@+id/btnBack"
-        android:layout_marginStart="16dp" /> <TextView
+        app:layout_constraintTop_toTopOf="@id/btnBack"
+        app:layout_constraintBottom_toBottomOf="@id/btnBack"
+        app:layout_constraintStart_toEndOf="@id/btnBack"
+        android:layout_marginStart="16dp" />
+
+    <!-- Add Create Playlist Button -->
+    <ImageButton
+        android:id="@+id/btnCreatePlaylist"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Create Playlist"
+        android:src="@drawable/ic_add"
+        app:tint="#F5F0FF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnBack" />
+
+    <TextView
         android:id="@+id/tv_playlist_for_you_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -40,7 +55,7 @@
         android:textColor="#F5F0FF"
         android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/tv_greeting"
+        app:layout_constraintTop_toBottomOf="@id/tv_greeting"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="24dp" />
 
@@ -69,7 +84,7 @@
         android:textColor="#F5F0FF"
         android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/rv_playlist_for_you"
+        app:layout_constraintTop_toBottomOf="@id/rv_playlist_for_you"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="24dp" />
 
@@ -90,6 +105,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0.0"
         tools:listitem="@layout/item_playlist" />
+
     <include
         android:id="@+id/miniPlayerLayout"
         layout="@layout/layout_mini_player"

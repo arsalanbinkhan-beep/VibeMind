@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.ActivityOptions
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -16,8 +17,27 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import kotlin.math.sqrt
 
-class MainActivity : BaseActivity() {
+
+
+class MainActivity : BaseActivity(), SensorEventListener {
+    private var shakeEnabled = true
+
+    private var sensitivity = 20  // adjust this for shake strength (higher = harder shake)
+
+    private var lastShakeTime: Long = 0
+
+
+    // Shake detection
+    private var sensorManager: SensorManager? = null
+    private var accelCurrent = 0f
+    private var accelLast = 0f
+    private var shake = 0f
+
 
     private lateinit var binding: ActivityMainBinding
 
@@ -29,13 +49,17 @@ class MainActivity : BaseActivity() {
     private lateinit var lofiSongs: List<Song>
     private lateinit var forYouSongs: List<Song>
 
-    private val geminiApiKey = "AIzaSyBmYo9Id92Fso_8umH0IqURYLL-bX9ODi4"
+    private val geminiApiKey = "AIzaSyBl7pbzRX5nDn6PM_Fi6G9xAfF1DdJcvP0"
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         attachMiniPlayer(binding.miniPlayer)
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
 
         val intent = Intent(this, MusicPlayerActivity::class.java)
         val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_in_up, R.anim.slide_out_down)
@@ -45,6 +69,22 @@ class MainActivity : BaseActivity() {
         setupNavBarListeners()
         checkAndLoadSongs()
     }
+    override fun onResume() {
+        super.onResume()
+        MiniPlayerManager.refresh(this)
+
+        // start listening for accelerometer
+        sensorManager?.registerListener(
+            this,
+            sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+    }
+    override fun onPause() {
+        super.onPause()
+        sensorManager?.unregisterListener(this)
+    }
+
 
     private fun setupNavBarListeners() {
         binding.ivHome.setOnClickListener {}
@@ -336,4 +376,36 @@ class MainActivity : BaseActivity() {
             loadAndCategorizeSongs()
         }
     }
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+
+            accelLast = accelCurrent
+            accelCurrent = sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+            val delta = accelCurrent - accelLast
+            shake = shake * 0.9f + delta
+
+            val prefs = getSharedPreferences("app_settings", MODE_PRIVATE)
+            val shakeEnabled = prefs.getBoolean("shake_to_change", false)
+            val sensitivity = prefs.getInt("shake_sensitivity", 50)
+
+            if (shakeEnabled && shake > (sensitivity / 10f)) {
+                val now = System.currentTimeMillis()
+                if (now - lastShakeTime > 1000) { // 1s cooldown
+                    lastShakeTime = now
+                    MusicPlayerActivity.skipToNext(this)
+                    MiniPlayerManager.refresh(this)
+                }
+            }
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // not used
+    }
+
+
+
 }
