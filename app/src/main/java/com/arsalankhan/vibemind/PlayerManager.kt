@@ -1,6 +1,7 @@
 package com.arsalankhan.vibemind
 
 import android.content.Context
+import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 
@@ -61,4 +62,14 @@ object PlayerManager {
             exoPlayer.release()
         }
     }
+    fun prepareSong(context: Context, songs: List<Song>, index: Int) {
+        currentIndex = index
+        currentSong = songs[index]
+
+        val songUri = Uri.parse(currentSong!!.path) // or currentSong!!.filePath
+        exoPlayer?.setMediaItem(MediaItem.fromUri(songUri))
+        exoPlayer?.prepare()
+    }
+
+
 }

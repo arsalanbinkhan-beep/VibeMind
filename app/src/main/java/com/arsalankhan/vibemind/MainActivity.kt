@@ -37,6 +37,11 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
         attachMiniPlayer(binding.miniPlayer)
 
+        val intent = Intent(this, MusicPlayerActivity::class.java)
+        val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_in_up, R.anim.slide_out_down)
+        startActivity(intent, options.toBundle())
+
+
         setupNavBarListeners()
         checkAndLoadSongs()
     }
@@ -46,19 +51,19 @@ class MainActivity : BaseActivity() {
 
         binding.ivAlbum.setOnClickListener {
             val intent = Intent(this, PlaylistAlbumActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_from_right, R.anim.slide_to_left)
             startActivity(intent, options.toBundle())
         }
 
         binding.ivSearch.setOnClickListener {
             val intent = Intent(this, SearchActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_from_right, R.anim.slide_to_left)
             startActivity(intent, options.toBundle())
         }
 
         binding.ivSettings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_from_right, R.anim.slide_to_left)
             startActivity(intent, options.toBundle())
         }
     }

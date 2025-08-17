@@ -1,16 +1,19 @@
 package com.arsalankhan.vibemind
 
 import android.content.ContentUris
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.widget.SeekBar
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.Player
 import com.arsalankhan.vibemind.databinding.ActivityMusicPlayerBinding
 import com.bumptech.glide.Glide
+import kotlin.math.atan2
+import kotlin.math.roundToInt
 
 class MusicPlayerActivity : AppCompatActivity() {
 
@@ -22,6 +25,8 @@ class MusicPlayerActivity : AppCompatActivity() {
     private var isLiked = false
 
     private val handler = Handler(Looper.getMainLooper())
+    private lateinit var prefs: SharedPreferences // 🔥 CHANGED
+
     private val updateRunnable = object : Runnable {
         override fun run() {
             val positionMs = PlayerManager.getCurrentPosition()
@@ -29,7 +34,6 @@ class MusicPlayerActivity : AppCompatActivity() {
 
             if (durationMs > 0) {
                 val progressPercent = (positionMs.toFloat() / durationMs) * 100f
-                binding.seekBar.progress = progressPercent.toInt()
                 binding.circularProgress.progress = progressPercent.toInt()
             }
 
@@ -45,37 +49,46 @@ class MusicPlayerActivity : AppCompatActivity() {
         binding = ActivityMusicPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
         PlayerManager.init(this)
+        prefs = getSharedPreferences("music_prefs", MODE_PRIVATE) // 🔥 CHANGED
 
         @Suppress("UNCHECKED_CAST")
         songList = intent.getSerializableExtra("SONG_LIST") as? ArrayList<Song> ?: arrayListOf()
-        currentIndex = intent.getIntExtra("SELECTED_INDEX", 0)
+        currentIndex = intent.getIntExtra("SELECTED_INDEX", -1) // 🔥 CHANGED (default -1)
 
         setupControls()
-        setupSeekBar()
+        setupCircularTouchControl()
 
-        if (PlayerManager.currentSong == null || PlayerManager.currentIndex != currentIndex) {
-            if (songList.isNotEmpty()) {
-                PlayerManager.playSong(this, songList, currentIndex)
+        if (songList.isEmpty()) {
+            Toast.makeText(this, "No songs to play", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
+        if (PlayerManager.currentSong == null) {
+            if (currentIndex == -1) {
+                // 🔥 No song selected → restore last state
+                val lastIndex = prefs.getInt("last_index", 0)
+                val lastPosition = prefs.getLong("last_position", 0L)
+
+                PlayerManager.prepareSong(this, songList, lastIndex)
+                PlayerManager.seekTo(lastPosition)
             } else {
-                Toast.makeText(this, "No songs to play", Toast.LENGTH_SHORT).show()
-                finish()
-                return
+                // 🔥 Start fresh selection
+                PlayerManager.prepareSong(this, songList, currentIndex)
             }
         }
 
-        updateUI(PlayerManager.currentSong!!)
+        PlayerManager.currentSong?.let { updateUI(it) }
 
         PlayerManager.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 binding.iconPlayPause.setImageResource(
                     if (isPlaying) R.drawable.ic_pause_circle else R.drawable.ic_play_circle
                 )
-                if (isPlaying) {
-                    handler.post(updateRunnable)
-                } else {
-                    handler.removeCallbacks(updateRunnable)
-                }
+                if (isPlaying) handler.post(updateRunnable)
+                else handler.removeCallbacks(updateRunnable)
             }
 
             override fun onPlaybackStateChanged(state: Int) {
@@ -104,7 +117,10 @@ class MusicPlayerActivity : AppCompatActivity() {
 
         binding.textSongTitle.text = song.title
         binding.textArtistName.text = song.artist
-        binding.iconPlayPause.setImageResource(R.drawable.ic_pause_circle)
+        binding.iconPlayPause.setImageResource(
+            if (PlayerManager.isPlaying()) R.drawable.ic_pause_circle else R.drawable.ic_play_circle
+        )
+
         isLiked = false
         binding.iconHeart.setImageResource(R.drawable.ic_heart_outline)
 
@@ -115,17 +131,14 @@ class MusicPlayerActivity : AppCompatActivity() {
         binding.textCurrentTime.text = formatTime(positionMs)
         if (durationMs > 0) {
             val progressPercent = (positionMs.toFloat() / durationMs) * 100f
-            binding.seekBar.progress = progressPercent.toInt()
+            binding.circularProgress.progress = progressPercent.toInt()
         }
     }
 
     private fun setupControls() {
         binding.iconPlayPause.setOnClickListener {
-            if (PlayerManager.isPlaying()) {
-                PlayerManager.pause()
-            } else {
-                PlayerManager.play()
-            }
+            if (PlayerManager.isPlaying()) PlayerManager.pause()
+            else PlayerManager.play()
         }
 
         binding.iconNext.setOnClickListener { skipToNext() }
@@ -153,30 +166,34 @@ class MusicPlayerActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupSeekBar() {
-        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    val durationMs = PlayerManager.getDuration()
-                    if (durationMs > 0) {
-                        val seekPosition = (durationMs * (progress / 100f)).toLong()
-                        PlayerManager.seekTo(seekPosition)
-                        binding.textCurrentTime.text = formatTime(seekPosition)
-                    }
+    private fun setupCircularTouchControl() {
+        binding.circularProgress.setOnTouchListener { v, event ->
+            val centerX = v.width / 2f
+            val centerY = v.height / 2f
+            val dx = event.x - centerX
+            val dy = event.y - centerY
+
+            var degrees = Math.toDegrees(atan2(dy, dx).toDouble())
+            degrees = (degrees + 360 + 90) % 360
+            val newProgress = (degrees / 360 * 100).roundToInt().coerceIn(0, 100)
+
+            if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
+                binding.circularProgress.progress = newProgress
+                val durationMs = PlayerManager.getDuration()
+                if (durationMs > 0) {
+                    val seekPosition = (durationMs * (newProgress / 100f)).toLong()
+                    PlayerManager.seekTo(seekPosition)
+                    binding.textCurrentTime.text = formatTime(seekPosition)
                 }
             }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+            true
+        }
     }
 
     private fun skipToNext() {
-        currentIndex = if (isShuffle) {
-            (songList.indices).random()
-        } else {
-            (currentIndex + 1) % songList.size
-        }
+        currentIndex = if (isShuffle) (songList.indices).random()
+        else (currentIndex + 1) % songList.size
+
         PlayerManager.playSong(this, songList, currentIndex)
         updateUI(songList[currentIndex])
     }
@@ -192,6 +209,14 @@ class MusicPlayerActivity : AppCompatActivity() {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         return String.format("%d:%02d", minutes, seconds)
+    }
+
+    override fun onPause() { // 🔥 Save state
+        super.onPause()
+        prefs.edit()
+            .putInt("last_index", PlayerManager.currentIndex) // no ()
+            .putLong("last_position", PlayerManager.getCurrentPosition())
+            .apply()
     }
 
     override fun onDestroy() {
