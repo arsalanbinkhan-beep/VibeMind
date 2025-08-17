@@ -1,49 +1,41 @@
 package com.arsalankhan.vibemind
 
-import android.app.ActivityOptions
+import android.content.ContentUris
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
+import android.widget.SeekBar
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import com.arsalankhan.vibemind.databinding.ActivityMusicPlayerBinding
 import com.bumptech.glide.Glide
-import info.abdolahi.CircularMusicProgressBar
-import info.abdolahi.OnCircularSeekBarChangeListener
-import java.io.File
-import java.io.Serializable
 
 class MusicPlayerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMusicPlayerBinding
-    private lateinit var exoPlayer: ExoPlayer
     private var songList: ArrayList<Song> = arrayListOf()
     private var currentIndex = 0
     private var isShuffle = false
     private var isRepeat = false
     private var isLiked = false
+
     private val handler = Handler(Looper.getMainLooper())
-    private var isUserSeeking = false
     private val updateRunnable = object : Runnable {
         override fun run() {
-            if (!isUserSeeking) {
-                val positionMs = exoPlayer.currentPosition
-                val durationMs = exoPlayer.duration
+            val positionMs = PlayerManager.getCurrentPosition()
+            val durationMs = PlayerManager.getDuration()
 
-                if (durationMs > 0) {
-                    val progressPercent = (positionMs.toFloat() / durationMs.toFloat()) * 100f
-                    binding.musicProgressBar.setValue(progressPercent)
-                }
-
-                binding.textCurrentTime.text = formatTime(positionMs)
-                binding.textTotalTime.text = formatTime(durationMs)
+            if (durationMs > 0) {
+                val progressPercent = (positionMs.toFloat() / durationMs) * 100f
+                binding.seekBar.progress = progressPercent.toInt()
+                binding.circularProgress.progress = progressPercent.toInt()
             }
+
+            binding.textCurrentTime.text = formatTime(positionMs)
+            binding.textTotalTime.text = formatTime(durationMs)
+
             handler.postDelayed(this, 1000)
         }
     }
@@ -53,46 +45,28 @@ class MusicPlayerActivity : AppCompatActivity() {
         binding = ActivityMusicPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        PlayerManager.init(this)
+
         @Suppress("UNCHECKED_CAST")
         songList = intent.getSerializableExtra("SONG_LIST") as? ArrayList<Song> ?: arrayListOf()
         currentIndex = intent.getIntExtra("SELECTED_INDEX", 0)
 
-        setupExoPlayer()
         setupControls()
+        setupSeekBar()
 
-        if (songList.isNotEmpty()) {
-            playSong(currentIndex)
-        } else {
-            Toast.makeText(this, "No songs to play", Toast.LENGTH_SHORT).show()
-            finish()
+        if (PlayerManager.currentSong == null || PlayerManager.currentIndex != currentIndex) {
+            if (songList.isNotEmpty()) {
+                PlayerManager.playSong(this, songList, currentIndex)
+            } else {
+                Toast.makeText(this, "No songs to play", Toast.LENGTH_SHORT).show()
+                finish()
+                return
+            }
         }
 
-        // 💡 NEW: This replaces the old onBackPressed() method
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                // Handle back press logic here
-                overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down)
-                finish()
-            }
-        })
+        updateUI(PlayerManager.currentSong!!)
 
-    }
-
-
-    private fun setupExoPlayer() {
-        exoPlayer = ExoPlayer.Builder(this).build()
-
-        exoPlayer.addListener(object : Player.Listener {
-            override fun onPlaybackStateChanged(state: Int) {
-                if (state == Player.STATE_ENDED) {
-                    if (isRepeat) {
-                        playSong(currentIndex)
-                    } else {
-                        skipToNext()
-                    }
-                }
-            }
-
+        PlayerManager.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 binding.iconPlayPause.setImageResource(
                     if (isPlaying) R.drawable.ic_pause_circle else R.drawable.ic_play_circle
@@ -103,23 +77,27 @@ class MusicPlayerActivity : AppCompatActivity() {
                     handler.removeCallbacks(updateRunnable)
                 }
             }
+
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_ENDED) {
+                    if (isRepeat) {
+                        PlayerManager.playSong(this@MusicPlayerActivity, songList, currentIndex)
+                    } else {
+                        skipToNext()
+                    }
+                }
+            }
         })
     }
 
-    private fun playSong(index: Int) {
-        if (index !in songList.indices) return
-
-        val song = songList[index]
-        val songUri = Uri.fromFile(File(song.path))
-        Log.d("MusicPlayer", "Playing: ${song.title}, URI: $songUri")
-
-        val mediaItem = MediaItem.fromUri(songUri)
-        exoPlayer.setMediaItem(mediaItem)
-        exoPlayer.prepare()
-        exoPlayer.play()
+    private fun updateUI(song: Song) {
+        val albumArtUri = ContentUris.withAppendedId(
+            Uri.parse("content://media/external/audio/albumart"),
+            song.albumId
+        )
 
         Glide.with(this)
-            .load(song.albumArtUri)
+            .load(albumArtUri)
             .placeholder(R.drawable.album_art)
             .error(R.drawable.album_art)
             .into(binding.imageAlbumArt)
@@ -127,17 +105,26 @@ class MusicPlayerActivity : AppCompatActivity() {
         binding.textSongTitle.text = song.title
         binding.textArtistName.text = song.artist
         binding.iconPlayPause.setImageResource(R.drawable.ic_pause_circle)
-
         isLiked = false
         binding.iconHeart.setImageResource(R.drawable.ic_heart_outline)
+
+        val durationMs = PlayerManager.getDuration()
+        binding.textTotalTime.text = formatTime(durationMs)
+
+        val positionMs = PlayerManager.getCurrentPosition()
+        binding.textCurrentTime.text = formatTime(positionMs)
+        if (durationMs > 0) {
+            val progressPercent = (positionMs.toFloat() / durationMs) * 100f
+            binding.seekBar.progress = progressPercent.toInt()
+        }
     }
 
     private fun setupControls() {
         binding.iconPlayPause.setOnClickListener {
-            if (exoPlayer.isPlaying) {
-                exoPlayer.pause()
+            if (PlayerManager.isPlaying()) {
+                PlayerManager.pause()
             } else {
-                exoPlayer.play()
+                PlayerManager.play()
             }
         }
 
@@ -164,40 +151,23 @@ class MusicPlayerActivity : AppCompatActivity() {
                 if (isLiked) R.drawable.ic_heart else R.drawable.ic_heart_outline
             )
         }
+    }
 
-        // 💡 NEW: The close button now triggers the new back press dispatcher
-        binding.iconClose.setOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
-
-        binding.musicProgressBar.setOnCircularBarChangeListener(object : OnCircularSeekBarChangeListener {
-            override fun onProgressChanged(
-                circularBar: CircularMusicProgressBar?, progress: Int, fromUser: Boolean
-            ) {
+    private fun setupSeekBar() {
+        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    isUserSeeking = true
-                    val durationMs = exoPlayer.duration
+                    val durationMs = PlayerManager.getDuration()
                     if (durationMs > 0) {
                         val seekPosition = (durationMs * (progress / 100f)).toLong()
+                        PlayerManager.seekTo(seekPosition)
                         binding.textCurrentTime.text = formatTime(seekPosition)
                     }
                 }
             }
 
-            override fun onClick(circularBar: CircularMusicProgressBar?) {}
-
-            override fun onLongPress(circularBar: CircularMusicProgressBar?) {}
-
-
-            fun onStopTrackingTouch(circularBar: CircularMusicProgressBar?) {
-                val durationMs = exoPlayer.duration
-                val progress = binding.musicProgressBar.javaClass.getDeclaredField("mProgressValue").apply { isAccessible = true }.get(binding.musicProgressBar) as Float
-                if (durationMs > 0) {
-                    val seekPosition = (durationMs * (progress / 100f)).toLong()
-                    exoPlayer.seekTo(seekPosition)
-                }
-                isUserSeeking = false
-            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
     }
 
@@ -207,12 +177,14 @@ class MusicPlayerActivity : AppCompatActivity() {
         } else {
             (currentIndex + 1) % songList.size
         }
-        playSong(currentIndex)
+        PlayerManager.playSong(this, songList, currentIndex)
+        updateUI(songList[currentIndex])
     }
 
     private fun skipToPrevious() {
         currentIndex = if (currentIndex - 1 < 0) songList.size - 1 else currentIndex - 1
-        playSong(currentIndex)
+        PlayerManager.playSong(this, songList, currentIndex)
+        updateUI(songList[currentIndex])
     }
 
     private fun formatTime(ms: Long): String {
@@ -224,18 +196,6 @@ class MusicPlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        exoPlayer.release()
         handler.removeCallbacks(updateRunnable)
     }
-    override fun onBackPressed() {
-        // Override to prevent default back press behavior
-        // Use the custom back press dispatcher instead
-        onBackPressedDispatcher.onBackPressed()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation)
-    }
-
 }

@@ -37,12 +37,12 @@ class SongUtils {
                 val id = it.getLong(idColumn)
                 val title = it.getString(titleColumn) ?: "Unknown Title"
                 val artist = it.getString(artistColumn) ?: "Unknown Artist"
-                val data = it.getString(dataColumn) ?: continue // Skip if no path
+                val data = it.getString(dataColumn) ?: continue
                 val duration = it.getLong(durationColumn)
                 val albumId = it.getLong(albumIdColumn)
 
                 val file = File(data)
-                if (!file.exists()) continue // Skip corrupted/missing files
+                if (!file.exists()) continue
 
                 val song = Song(
                     id = id,
@@ -50,26 +50,13 @@ class SongUtils {
                     artist = artist,
                     path = data,
                     duration = duration,
-                    albumId = albumId,
-                    category = inferCategory(title, artist)
+                    albumId = albumId
+                    // The category is no longer set here.
                 )
 
                 songList.add(song)
             }
         }
-
         return songList
-    }
-
-    // 🔍 Basic keyword-based genre detection
-    private fun inferCategory(title: String, artist: String): String {
-        val combined = "$title $artist".lowercase()
-        return when {
-            "pop" in combined -> "Pop"
-            "rock" in combined -> "Rock"
-            "epic" in combined -> "Epic"
-            "lofi" in combined || "lo-fi" in combined -> "Lofi"
-            else -> "For You"
-        }
     }
 }

@@ -1,3 +1,5 @@
+// In app/build.gradle.kts
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -35,22 +37,30 @@ android {
         jvmTarget = "11"
     }
     viewBinding {
-        enable=true
+        enable = true
     }
 }
 
 
 dependencies {
+
+    // Kotlin Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Media3 dependencies (consolidated)
     implementation("androidx.media3:media3-exoplayer:1.8.0")
-    implementation("androidx.media3:media3-exoplayer-dash:1.8.0")
     implementation("androidx.media3:media3-ui:1.8.0")
-    implementation("androidx.media3:media3-ui-compose:1.8.0")
+
+
+    // Circular Music Progress Bar (using the recommended version)
     implementation("com.github.aliab:circular-music-progressbar:1.5.0")
+
+    // Glide
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation(libs.generativeai)
     kapt("com.github.bumptech.glide:compiler:4.16.0")
 
-
-
+    // General Android dependencies from your libs.versions.toml
     implementation(libs.material)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

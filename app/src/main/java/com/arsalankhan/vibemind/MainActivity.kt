@@ -6,54 +6,39 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.arsalankhan.vibemind.databinding.ActivityMainBinding
-import java.io.Serializable // Import for Serializable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 
 class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
     private lateinit var allSongs: ArrayList<Song>
+
     private lateinit var popSongs: List<Song>
     private lateinit var rockSongs: List<Song>
     private lateinit var epicSongs: List<Song>
     private lateinit var lofiSongs: List<Song>
     private lateinit var forYouSongs: List<Song>
 
+    private val geminiApiKey = "AIzaSyBmYo9Id92Fso_8umH0IqURYLL-bX9ODi4"
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        window.decorView.setOnApplyWindowInsetsListener(null)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // Attach the mini player to BaseActivity
         attachMiniPlayer(binding.miniPlayer)
-
-
-        binding.miniPlayer.root.setOnClickListener {
-            val intent = Intent(this, MusicPlayerActivity::class.java)
-
-            // Pass the current song list and index from your PlayerManager
-            PlayerManager.songList?.let { songList ->
-                intent.putExtra("SONG_LIST", songList as java.io.Serializable)
-                intent.putExtra("SELECTED_INDEX", PlayerManager.currentIndex)
-            }
-
-            startActivity(intent)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_in_up, R.anim.slide_out_down) // Changed to slide animations
-            startActivity(intent, options.toBundle())
-
-
-        }
 
         setupNavBarListeners()
         checkAndLoadSongs()
-
-        if (PlayerManager.currentSong == null) {
-            loadLastPlayedSong()
-        }
     }
 
     private fun setupNavBarListeners() {
@@ -61,25 +46,25 @@ class MainActivity : BaseActivity() {
 
         binding.ivAlbum.setOnClickListener {
             val intent = Intent(this, PlaylistAlbumActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_from_right, R.anim.slide_to_left)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
             startActivity(intent, options.toBundle())
         }
 
         binding.ivSearch.setOnClickListener {
             val intent = Intent(this, SearchActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_from_right, R.anim.slide_to_left)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
             startActivity(intent, options.toBundle())
         }
 
         binding.ivSettings.setOnClickListener {
             val intent = Intent(this, SettingsActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_from_right, R.anim.slide_to_left)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
             startActivity(intent, options.toBundle())
         }
     }
 
     private fun checkAndLoadSongs() {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Use TIRAMISU constant
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_AUDIO
         } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
@@ -95,12 +80,39 @@ class MainActivity : BaseActivity() {
     private fun loadAndCategorizeSongs() {
         allSongs = SongUtils().getAllAudioFiles(this)
 
-        popSongs = allSongs.filter { it.category == "Pop" }
-        rockSongs = allSongs.filter { it.category == "Rock" }
-        epicSongs = allSongs.filter { it.category == "Epic" }
-        lofiSongs = allSongs.filter { it.category == "Lofi" }
-        forYouSongs = allSongs.filter { it.category == "For You" }
+        lifecycleScope.launch {
+            try {
+                val songTitles = allSongs.map { it.title }
+                val categorizedSongsJson = withContext(Dispatchers.IO) {
+                    GeminiApi(geminiApiKey).getCategorizedSongs(songTitles)
+                }
+                val categorizedSongs = parseCategorizedSongsJson(categorizedSongsJson)
 
+                // Filter songs based on the Gemini response with prefixes
+                popSongs = allSongs.filter { categorizedSongs["Pop"]?.contains(it.title) == true }
+                rockSongs = allSongs.filter { categorizedSongs["Rock"]?.contains(it.title) == true }
+                epicSongs = allSongs.filter { categorizedSongs["Epic"]?.contains(it.title) == true }
+                lofiSongs = allSongs.filter { categorizedSongs["Lofi"]?.contains(it.title) == true }
+
+                forYouSongs = allSongs.shuffled().take(5)
+                updateUI()
+
+            } catch (e: Exception) {
+                Log.e("GeminiApi", "Error categorizing songs: ${e.message}", e)
+                // Fallback logic if the API call fails
+                // Note: Without the 'category' property in the Song data class,
+                // a proper fallback would require a different method, but we'll
+                // keep a basic random selection here.
+                popSongs = allSongs.shuffled().take(5)
+                rockSongs = allSongs.shuffled().take(5)
+                epicSongs = allSongs.shuffled().take(5)
+                lofiSongs = allSongs.shuffled().take(5)
+                forYouSongs = allSongs.shuffled()
+                updateUI() }
+        }
+    }
+
+    private fun updateUI() {
         val recommendedSongs = getRecommendedSongs()
 
         val songClickListener = { list: ArrayList<Song>, index: Int ->
@@ -110,7 +122,7 @@ class MainActivity : BaseActivity() {
                 PlaybackHistoryManager.incrementPlayCount(this, selectedSong.path)
                 saveLastPlayedSong(selectedSong)
                 updateLastPlayedSection()
-                MiniPlayerManager.refresh(this) // Refresh mini player UI
+                MiniPlayerManager.refresh(this)
             }
         }
 
@@ -129,6 +141,25 @@ class MainActivity : BaseActivity() {
 
         updateLastPlayedSection()
         setupCategoryButtonListeners(songClickListener)
+
+        if (PlayerManager.currentSong == null) {
+            loadLastPlayedSong()
+        }
+    }
+
+    private fun testGeminiApi() {
+        lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    GeminiApi(geminiApiKey).getCategorizedSongs(listOf("Song 1", "Song 2"))
+                }
+                Log.d("GeminiTest", "API Response: $response")
+                JSONObject(response)
+                Log.d("GeminiTest", "JSON response is valid!")
+            } catch (e: Exception) {
+                Log.e("GeminiTest", "Gemini API Test Failed: ${e.message}")
+            }
+        }
     }
 
     private fun getRecommendedSongs(): List<Song> {
@@ -137,8 +168,22 @@ class MainActivity : BaseActivity() {
     }
 
     private fun updateLastPlayedSection() {
-        val topPlayed = PlaybackHistoryManager.getTopPlayedSongs(this, allSongs)
-            .take(3) // Limit to last 3 songs only
+        val prefs = getSharedPreferences("LAST_PLAYED", MODE_PRIVATE)
+        val jsonList = prefs.getString("songs", "[]")
+        val songList = mutableListOf<Song>()
+
+        try {
+            val jsonArray = org.json.JSONArray(jsonList)
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
+                val song = allSongs.find { it.id == obj.getLong("id") }
+                if (song != null) {
+                    songList.add(song)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 
         val songClickListener = { list: ArrayList<Song>, index: Int ->
             val selectedSong = list[index]
@@ -152,13 +197,11 @@ class MainActivity : BaseActivity() {
         }
 
         binding.recyclerViewLastPlayedSongs.adapter =
-            LastPlayedAdapter(ArrayList(topPlayed), songClickListener)
+            LastPlayedAdapter(ArrayList(songList), songClickListener)
     }
 
 
     private fun setupCategoryButtonListeners(songClickListener: (ArrayList<Song>, Int) -> Unit) {
-        // Assuming you have IDs for your category buttons in activity_main.xml
-        // e.g., android:id="@+id/categoryPop"
         binding.categoryPop.setOnClickListener {
             binding.recyclerViewSongs.adapter = SongAdapter(ArrayList(popSongs), songClickListener)
         }
@@ -176,47 +219,109 @@ class MainActivity : BaseActivity() {
         }
     }
 
+    private fun parseCategorizedSongsJson(jsonString: String): Map<String, List<String>> {
+        val result = mutableMapOf<String, List<String>>()
+        try {
+            // Step 1: Remove the markdown code block identifiers.
+            // The API often wraps its JSON response in a markdown code block.
+            val cleanedJsonString = jsonString
+                .replace("```json", "")
+                .replace("```", "")
+                .trim()
+
+            // Step 2: Now that the string is clean, attempt to parse it.
+            val jsonObject = JSONObject(cleanedJsonString)
+            val keys = jsonObject.keys()
+            while (keys.hasNext()) {
+                val category = keys.next()
+                val jsonArray = jsonObject.getJSONArray(category)
+                val songTitles = (0 until jsonArray.length()).map {
+                    jsonArray.getString(it)
+                }
+                result[category] = songTitles
+            }
+        } catch (e: Exception) {
+            // Log the cleaned string for debugging purposes
+            Log.e("JSON_PARSING", "Error parsing JSON from Gemini. Cleaned: $jsonString. Error: ${e.message}")
+        }
+        return result
+    }
+
     private fun saveLastPlayedSong(song: Song) {
         val prefs = getSharedPreferences("LAST_PLAYED", MODE_PRIVATE)
-        prefs.edit().apply {
-            putLong("id", song.id)
-            putString("title", song.title)
-            putString("artist", song.artist)
-            putString("path", song.path)
-            putLong("duration", song.duration)
-            putLong("albumId", song.albumId)
-            putString("category", song.category)
-            apply()
+        val jsonList = prefs.getString("songs", "[]")
+        val songList = mutableListOf<Song>()
+
+        try {
+            val jsonArray = org.json.JSONArray(jsonList)
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
+                songList.add(
+                    Song(
+                        id = obj.getLong("id"),
+                        title = obj.getString("title"),
+                        artist = obj.getString("artist"),
+                        path = obj.getString("path"),
+                        duration = obj.getLong("duration"),
+                        albumId = obj.getLong("albumId")
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+
+        // Remove if already exists
+        songList.removeAll { it.id == song.id }
+
+        // Add to top
+        songList.add(0, song)
+
+        // Keep only 3
+        if (songList.size > 3) {
+            songList.subList(3, songList.size).clear()
+        }
+
+        // Save back
+        val newJsonArray = org.json.JSONArray()
+        songList.forEach {
+            val obj = org.json.JSONObject().apply {
+                put("id", it.id)
+                put("title", it.title)
+                put("artist", it.artist)
+                put("path", it.path)
+                put("duration", it.duration)
+                put("albumId", it.albumId)
+            }
+            newJsonArray.put(obj)
+        }
+
+        prefs.edit().putString("songs", newJsonArray.toString()).apply()
     }
+
 
     private fun loadLastPlayedSong() {
         val prefs = getSharedPreferences("LAST_PLAYED", MODE_PRIVATE)
-        val id = prefs.getLong("id", -1L)
-        val title = prefs.getString("title", null)
-        val artist = prefs.getString("artist", null)
-        val path = prefs.getString("path", null)
-        val duration = prefs.getLong("duration", -1L)
-        val albumId = prefs.getLong("albumId", -1L)
-        val category = prefs.getString("category", null)
+        val jsonList = prefs.getString("songs", "[]")
 
-        if (id != -1L && !title.isNullOrEmpty() && !artist.isNullOrEmpty() &&
-            !path.isNullOrEmpty() && duration > 0 && albumId != -1L && !category.isNullOrEmpty()) {
-
-            val song = Song(
-                id = id,
-                title = title,
-                artist = artist,
-                path = path,
-                duration = duration,
-                albumId = albumId,
-                category = category
-            )
-
-            PlayerManager.playSong(this, listOf(song), 0)
-            MiniPlayerManager.refresh(this)
+        try {
+            val jsonArray = org.json.JSONArray(jsonList)
+            if (jsonArray.length() > 0) {
+                val obj = jsonArray.getJSONObject(0)
+                val song = allSongs.find { it.id == obj.getLong("id") }
+                if (song != null) {
+                    val songIndex = allSongs.indexOfFirst { it.id == song.id }
+                    if (songIndex != -1) {
+                        PlayerManager.playSong(this, allSongs, songIndex)
+                        MiniPlayerManager.refresh(this)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int, permissions: Array<out String>, grantResults: IntArray
@@ -226,42 +331,4 @@ class MainActivity : BaseActivity() {
             loadAndCategorizeSongs()
         }
     }
-
-    //make the play pause button change when pressed
-    override fun onResume() {
-        super.onResume()
-        // Refresh the mini player UI when returning to MainActivity
-        MiniPlayerManager.refresh(this)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // Clear the mini player binding to avoid memory leaks
-        miniPlayerBinding?.let {
-            MiniPlayerManager.bindMiniPlayer(this, it)
-        }
-    }
-
-    // Use OnBackPressedDispatcher for modern back handling
-    override fun onBackPressed() {
-        if (miniPlayerBinding?.root?.visibility == android.view.View.VISIBLE) {
-            miniPlayerBinding?.root?.visibility = android.view.View.GONE
-        } else {
-            // Use the dispatcher for backward compatibility
-            onBackPressedDispatcher.onBackPressed()
-        }
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        // Handle the up navigation
-        onBackPressedDispatcher.onBackPressed()
-        return true
-    }
-
-    //give the mini player a click listener to open the music player activity and animation of slide up
-
-
-
-
-
 }
