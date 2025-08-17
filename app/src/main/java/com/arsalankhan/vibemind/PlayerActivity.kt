@@ -23,13 +23,11 @@ class MusicPlayerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMusicPlayerBinding
     private lateinit var exoPlayer: ExoPlayer
-
     private var songList: ArrayList<Song> = arrayListOf()
     private var currentIndex = 0
     private var isShuffle = false
     private var isRepeat = false
     private var isLiked = false
-
     private val handler = Handler(Looper.getMainLooper())
     private var isUserSeeking = false
     private val updateRunnable = object : Runnable {
@@ -73,12 +71,13 @@ class MusicPlayerActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 // Handle back press logic here
+                overridePendingTransition(R.anim.slide_in_up, R.anim.slide_out_down)
                 finish()
             }
         })
-        //add slide up and slide down animations
 
     }
+
 
     private fun setupExoPlayer() {
         exoPlayer = ExoPlayer.Builder(this).build()
@@ -233,20 +232,10 @@ class MusicPlayerActivity : AppCompatActivity() {
         // Use the custom back press dispatcher instead
         onBackPressedDispatcher.onBackPressed()
     }
-    override fun onSupportNavigateUp(): Boolean {
-        // Handle the up navigation
-        onBackPressedDispatcher.onBackPressed()
-        return true
-    }
+
     override fun onStart() {
         super.onStart()
         overridePendingTransition(R.anim.slide_in_up, R.anim.no_animation)
     }
-
-    override fun finish() {
-        super.finish()
-        overridePendingTransition(R.anim.no_animation, R.anim.slide_out_down)
-    }
-
 
 }

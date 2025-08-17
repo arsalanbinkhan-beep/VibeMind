@@ -16,7 +16,7 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.btnBack.setOnClickListener {
             val intent= Intent(this, MainActivity::class.java)
-            val options = ActivityOptions.makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
+            val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_from_right, R.anim.slide_to_left)
             startActivity(intent, options.toBundle())
         }
 
