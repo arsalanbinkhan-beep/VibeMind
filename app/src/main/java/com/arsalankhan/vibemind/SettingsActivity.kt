@@ -107,7 +107,21 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     // ▶ Playback
+// ▶ Playback
     private fun setupPlaybackSettings() {
+        // Get current settings
+        val shakeEnabled = prefs.getBoolean("shake_to_change", false)
+        val shakeSensitivity = prefs.getInt("shake_sensitivity", 50)
+
+        // Set initial states
+        binding.switchShakeToChangeSong.isChecked = shakeEnabled
+        binding.seekBarShakeSensitivity.progress = shakeSensitivity
+        binding.tvShakeSensitivity.text = getString(R.string.shake_sensitivity, shakeSensitivity)
+
+        // Show/hide sensitivity controls based on initial state
+        binding.seekBarShakeSensitivity.visibility = if (shakeEnabled) View.VISIBLE else View.GONE
+        binding.tvShakeSensitivity.visibility = if (shakeEnabled) View.VISIBLE else View.GONE
+
         binding.switchGaplessPlayback.isChecked = prefs.getBoolean("gapless_playback", true)
         binding.switchGaplessPlayback.setOnCheckedChangeListener { _, checked ->
             prefs.edit { putBoolean("gapless_playback", checked) }
@@ -118,15 +132,14 @@ class SettingsActivity : AppCompatActivity() {
             prefs.edit { putBoolean("replay_gain", checked) }
         }
 
-        binding.switchShakeToChangeSong.isChecked = prefs.getBoolean("shake_to_change", false)
         binding.switchShakeToChangeSong.setOnCheckedChangeListener { _, checked ->
             prefs.edit { putBoolean("shake_to_change", checked) }
             binding.seekBarShakeSensitivity.visibility = if (checked) View.VISIBLE else View.GONE
             binding.tvShakeSensitivity.visibility = if (checked) View.VISIBLE else View.GONE
+
+            // ✅ No need to enable/disable sensor here - it's checked in real-time in onSensorChanged
         }
 
-        binding.seekBarShakeSensitivity.progress = prefs.getInt("shake_sensitivity", 50)
-        binding.tvShakeSensitivity.text = getString(R.string.shake_sensitivity, binding.seekBarShakeSensitivity.progress)
         binding.seekBarShakeSensitivity.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(sb: SeekBar?, progress: Int, fromUser: Boolean) {
                 binding.tvShakeSensitivity.text = getString(R.string.shake_sensitivity, progress)
@@ -233,24 +246,62 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchShowMediaControls.isChecked = prefs.getBoolean("show_media_controls", true)
         binding.switchShowMediaControls.setOnCheckedChangeListener { _, checked ->
             prefs.edit { putBoolean("show_media_controls", checked) }
+            // Update notification immediately when setting changes
+            if (checked && PlayerManager.currentSong != null) {
+                NotificationManager.updateNotification(this@SettingsActivity)
+            } else {
+                NotificationManager.stopNotificationService(this@SettingsActivity)
+            }
         }
 
         val style = prefs.getInt("notification_style", 0)
         if (style == 0) binding.radioCompactStyle.isChecked = true else binding.radioExpandedStyle.isChecked = true
         binding.radioGroupNotificationStyle.setOnCheckedChangeListener { _, id ->
-            prefs.edit { putInt("notification_style", if (id == R.id.radioCompactStyle) 0 else 1) }
+            val newStyle = if (id == R.id.radioCompactStyle) 0 else 1
+            prefs.edit { putInt("notification_style", newStyle) }
+            // Update notification with new style
+            if (PlayerManager.currentSong != null) {
+                NotificationManager.updateNotification(this@SettingsActivity)
+            }
         }
     }
 
+
+    // 🎧 Headphones
     // 🎧 Headphones
     private fun setupHeadphoneSettings() {
+        // Get current settings
+        val resumeOnHeadphone = prefs.getBoolean("resume_on_headphone", true)
+        val pauseOnDisconnect = prefs.getBoolean("pause_on_headphone_disconnect", true)
+        val bluetoothAutoPlay = prefs.getBoolean("bluetooth_autoplay", true)
+
+        // Set switch states
+        binding.switchResumeOnHeadphonePlug.isChecked = resumeOnHeadphone
+        binding.switchPauseOnHeadphoneDisconnect.isChecked = pauseOnDisconnect
+        binding.switchBluetoothAutoPlay.isChecked = bluetoothAutoPlay
+
+        // Apply initial states
+        if (resumeOnHeadphone) {
+            HeadphoneControls.enableResumeOnPlug(this)
+        } else {
+            HeadphoneControls.disableResumeOnPlug(this)
+        }
+
+        if (pauseOnDisconnect) {
+            HeadphoneControls.enablePauseOnUnplug(this)
+        } else {
+            HeadphoneControls.disablePauseOnUnplug(this)
+        }
+
+        if (bluetoothAutoPlay) {
+            HeadphoneControls.enableBluetoothAutoPlay(this)
+        } else {
+            HeadphoneControls.disableBluetoothAutoPlay(this)
+        }
+
         // Resume playback when headphones are plugged in
-        binding.switchResumeOnHeadphonePlug.isChecked = prefs.getBoolean("resume_on_headphone", true)
         binding.switchResumeOnHeadphonePlug.setOnCheckedChangeListener { _, checked ->
-            prefs.edit {
-                putBoolean("resume_on_headphone", checked)
-            }
-            // Apply changes immediately using the activity context
+            prefs.edit { putBoolean("resume_on_headphone", checked) }
             if (checked) {
                 HeadphoneControls.enableResumeOnPlug(this@SettingsActivity)
             } else {
@@ -259,13 +310,8 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // Pause playback when headphones are unplugged
-        binding.switchPauseOnHeadphoneDisconnect.isChecked =
-            prefs.getBoolean("pause_on_headphone_disconnect", true)
         binding.switchPauseOnHeadphoneDisconnect.setOnCheckedChangeListener { _, checked ->
-            prefs.edit {
-                putBoolean("pause_on_headphone_disconnect", checked)
-            }
-            // Apply changes immediately using the activity context
+            prefs.edit { putBoolean("pause_on_headphone_disconnect", checked) }
             if (checked) {
                 HeadphoneControls.enablePauseOnUnplug(this@SettingsActivity)
             } else {
@@ -274,13 +320,8 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // Auto-play when Bluetooth device connects
-        binding.switchBluetoothAutoPlay.isChecked =
-            prefs.getBoolean("bluetooth_autoplay", true)
         binding.switchBluetoothAutoPlay.setOnCheckedChangeListener { _, checked ->
-            prefs.edit {
-                putBoolean("bluetooth_autoplay", checked)
-            }
-            // Apply changes immediately using the activity context
+            prefs.edit { putBoolean("bluetooth_autoplay", checked) }
             if (checked) {
                 HeadphoneControls.enableBluetoothAutoPlay(this@SettingsActivity)
             } else {

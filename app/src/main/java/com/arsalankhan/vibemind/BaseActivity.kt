@@ -25,6 +25,10 @@ open class BaseActivity : AppCompatActivity() {
         miniPlayerBinding?.let {
             MiniPlayerManager.refresh(this)
         }
+        // Update notification when activity resumes
+        if (PlayerManager.currentSong != null) {
+            NotificationManager.updateNotification(this)
+        }
     }
 
     override fun onDestroy() {

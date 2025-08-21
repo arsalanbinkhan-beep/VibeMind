@@ -2,17 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permissions -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <!-- Add this for Android 12+ media playback -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <application
         android:allowBackup="true"
@@ -25,7 +28,12 @@
         android:theme="@style/Theme.VibeMind"
         tools:targetApi="31">
 
-        <!-- Main Activity -->
+        <service
+            android:name=".MusicNotificationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -37,32 +45,27 @@
             </intent-filter>
         </activity>
 
-        <!-- Music Player Activity -->
         <activity
             android:name=".MusicPlayerActivity"
             android:exported="false"
             android:screenOrientation="portrait"/>
 
-        <!-- Playlist Activity -->
         <activity
             android:name=".PlaylistAlbumActivity"
             android:exported="false"
             android:screenOrientation="portrait"/>
 
-        <!-- Search Activity -->
         <activity
             android:name=".SearchActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateVisible|adjustResize"/>
 
-        <!-- Settings Activity -->
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
             android:screenOrientation="portrait"/>
 
-        <!-- Licenses Activity -->
         <activity
             android:name=".LicensesActivity"
             android:exported="false"
@@ -72,7 +75,5 @@
             android:name=".PlaylistDetailActivity"
             android:exported="false"
             android:screenOrientation="portrait"/>
-
-
     </application>
 </manifest>

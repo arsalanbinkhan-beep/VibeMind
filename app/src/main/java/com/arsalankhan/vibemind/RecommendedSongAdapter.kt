@@ -17,7 +17,7 @@ class RecommendedSongAdapter(
             binding.tvRecommendedTitle.text = song.title
             binding.tvRecommendedArtist.text = song.artist
             Glide.with(binding.root.context)
-                .load(song.albumArtUri)
+                .load(song.getAlbumArtUri())
                 .placeholder(R.drawable.ic_album_art)
                 .into(binding.ivRecommendedArt)
 

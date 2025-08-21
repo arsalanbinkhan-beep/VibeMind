@@ -9,6 +9,7 @@
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
@@ -17,10 +18,10 @@
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:collapsedTitleTextAppearance="@style/CollapsedAppBar"
             app:contentScrim="@android:color/transparent"
             app:expandedTitleTextAppearance="@style/ExpandedAppBar"
-            app:collapsedTitleTextAppearance="@style/CollapsedAppBar">
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -31,20 +32,35 @@
                     android:id="@+id/iv_playlist_cover"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:contentDescription="Playlist cover"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/album_art"
-                    android:contentDescription="Playlist cover" />
+                    android:src="@drawable/album_art" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/gradient_overlay" />
 
+                <ImageView
+                    android:id="@+id/btnAddSongs"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:contentDescription="Add to playlist button"
+                    android:src="@drawable/ic_plus"
+                    app:tint="@color/white" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"
-                    android:layout_margin="16dp"
+                    android:layout_toLeftOf="@id/btnAddSongs"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="16dp"
                     android:orientation="vertical">
 
                     <TextView
@@ -73,22 +89,16 @@
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
                 app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-                app:titleTextColor="@color/white">
+                app:titleTextColor="@color/white" />
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_arrow_back"
-                    app:tint="@color/white" />
-
-            </androidx.appcompat.widget.Toolbar>
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:paddingBottom="72dp"> <!-- Add padding for mini player -->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -99,43 +109,44 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/btn_play_all"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
+                    android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/purple_500"
                     android:text="Play All"
-                    android:textColor="@color/white"
-                    android:layout_marginEnd="8dp"/>
+                    android:textColor="@color/white" />
 
                 <Button
                     android:id="@+id/btn_shuffle"
                     android:layout_width="0dp"
                     android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:backgroundTint="@color/gray_700"
                     android:text="Shuffle"
-                    android:textColor="@color/white"
-                    android:layout_marginStart="8dp"/>
+                    android:textColor="@color/white" />
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView_songs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:clipToPadding="false"
-                android:paddingBottom="72dp"/>
+                android:clipToPadding="false" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <!-- Mini Player - This should be outside the NestedScrollView -->
     <include
         android:id="@+id/miniPlayer"
         layout="@layout/layout_mini_player"
         android:layout_width="match_parent"
         android:layout_height="72dp"
         android:layout_gravity="bottom" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

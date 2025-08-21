@@ -23,7 +23,7 @@ object MiniPlayerManager {
         miniBinding.tvSongTitle.text = song.title
 
         Glide.with(activity)
-            .load(song.albumArtUri)
+            .load(song.getAlbumArtUri())
             .placeholder(R.drawable.ic_album_art)
             .into(miniBinding.ivAlbumArt)
 

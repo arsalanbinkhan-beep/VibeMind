@@ -387,11 +387,14 @@ class MainActivity : BaseActivity(), SensorEventListener {
             val delta = accelCurrent - accelLast
             shake = shake * 0.9f + delta
 
+            // ✅ Check settings in real-time instead of caching them
             val prefs = getSharedPreferences("app_settings", MODE_PRIVATE)
             val shakeEnabled = prefs.getBoolean("shake_to_change", false)
             val sensitivity = prefs.getInt("shake_sensitivity", 50)
 
-            if (shakeEnabled && shake > (sensitivity / 10f)) {
+            // ✅ Only process shake if the feature is enabled
+            val threshold = 15 - (sensitivity / 10f) // Same formula as MusicPlayerActivity
+            if (shakeEnabled && shake > threshold) {
                 val now = System.currentTimeMillis()
                 if (now - lastShakeTime > 1000) { // 1s cooldown
                     lastShakeTime = now

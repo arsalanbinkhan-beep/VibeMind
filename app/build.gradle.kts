@@ -50,6 +50,7 @@ dependencies {
     // Media3 dependencies (consolidated)
     implementation("androidx.media3:media3-exoplayer:1.8.0")
     implementation("androidx.media3:media3-ui:1.8.0")
+    implementation("androidx.media3:media3-session:1.8.0")
 
 
     // Circular Music Progress Bar (using the recommended version)
@@ -59,6 +60,8 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation(libs.generativeai)
     kapt("com.github.bumptech.glide:compiler:4.16.0")
+
+    implementation("androidx.media:media:1.6.0")
 
     // General Android dependencies from your libs.versions.toml
     implementation(libs.material)

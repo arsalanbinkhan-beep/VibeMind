@@ -16,30 +16,33 @@ object PlaylistManager {
 
     private lateinit var prefs: SharedPreferences
     private var playlists = mutableListOf<Playlist>()
+    private var isInitialized = false // Add this flag
 
     fun initialize(context: Context) {
+        if (isInitialized) return // Prevent re-initialization
+
         prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         loadPlaylists(context)
+        isInitialized = true
     }
 
     private fun loadPlaylists(context: Context) {
-        // Create default playlists if they don't exist
-        if (playlists.none { it.id == LIKED_PLAYLIST_ID }) {
-            playlists.add(Playlist(LIKED_PLAYLIST_ID, "Liked Songs", mutableListOf()))
-        }
-        if (playlists.none { it.id == MOST_PLAYED_PLAYLIST_ID }) {
-            playlists.add(Playlist(MOST_PLAYED_PLAYLIST_ID, "Most Played", mutableListOf()))
-        }
-        if (playlists.none { it.id == FOR_YOU_PLAYLIST_ID }) {
-            playlists.add(Playlist(FOR_YOU_PLAYLIST_ID, "For You", mutableListOf()))
-        }
+        playlists.clear() // Clear existing playlists before loading
+
+        // Create default playlists
+        playlists.add(Playlist(LIKED_PLAYLIST_ID, "Liked Songs", mutableListOf(), "Your favorite tracks"))
+        playlists.add(Playlist(MOST_PLAYED_PLAYLIST_ID, "Most Played", mutableListOf(), "Your top tracks"))
+        playlists.add(Playlist(FOR_YOU_PLAYLIST_ID, "For You", mutableListOf(), "Based on your listening"))
 
         // Load user-created playlists from SharedPreferences
         val savedPlaylists = prefs.getStringSet("user_playlists", setOf()) ?: setOf()
         savedPlaylists.forEach { json ->
             try {
                 val playlist = parsePlaylistJson(json)
-                playlists.add(playlist)
+                // Check if playlist already exists to avoid duplicates
+                if (playlists.none { it.id == playlist.id }) {
+                    playlists.add(playlist)
+                }
             } catch (e: Exception) {
                 Log.e("PlaylistManager", "Error parsing playlist: ${e.message}")
             }
@@ -80,8 +83,14 @@ object PlaylistManager {
     }
 
     fun createNewPlaylist(name: String, initialSongs: List<Song> = emptyList()): Playlist {
-        val newId = System.currentTimeMillis() // Simple ID generation
-        val newPlaylist = Playlist(newId, name, initialSongs.toMutableList(), "You",true)
+        val newId = System.currentTimeMillis()
+        val newPlaylist = Playlist(newId, name, initialSongs.toMutableList(), "You", true)
+
+        // Check if playlist with same name already exists
+        if (playlists.any { it.name == name && it.isUserCreated }) {
+            throw IllegalArgumentException("Playlist with name '$name' already exists")
+        }
+
         playlists.add(newPlaylist)
         saveUserPlaylists()
         return newPlaylist
@@ -140,4 +149,52 @@ object PlaylistManager {
             coverArtUri = json.optString("coverArtUri")?.let { Uri.parse(it) }
         )
     }
+    // In PlaylistManager.kt, add these methods:
+    fun addSongToPlaylist(playlistId: Long, song: Song) {
+        val playlist = playlists.firstOrNull { it.id == playlistId }
+        playlist?.songs?.add(song)
+        saveUserPlaylists()
+    }
+
+
+    fun getPlaylistById(playlistId: Long): Playlist? {
+        return playlists.firstOrNull { it.id == playlistId }
+    }
+    // In PlaylistManager.kt, add these methods:
+    fun deletePlaylist(playlistId: Long) {
+        playlists.removeAll { it.id == playlistId && it.isUserCreated }
+        saveUserPlaylists()
+    }
+
+    fun removeSongFromPlaylist(playlistId: Long, songId: Long) {
+        val playlist = playlists.firstOrNull { it.id == playlistId }
+        playlist?.songs?.removeAll { it.id == songId }
+        saveUserPlaylists()
+    }
+
+    fun canDeletePlaylist(playlistId: Long): Boolean {
+        return playlists.any { it.id == playlistId && it.isUserCreated }
+    }
+    fun getArtistPlaylists(allSongs: List<Song>): List<Playlist> {
+        val artistPlaylists = mutableListOf<Playlist>()
+
+        val songsByArtist = allSongs.groupBy { it.artist }
+
+        songsByArtist.forEach { (artist, songs) ->
+            if (songs.size >= 2) {
+                val playlist = Playlist(
+                    id = System.currentTimeMillis() + artist.hashCode().toLong(),
+                    name = artist,
+                    songs = songs.toMutableList(),
+                    artist = artist,
+                    isUserCreated = false,
+                    isArtistPlaylist = true // Set this flag
+                )
+                artistPlaylists.add(playlist)
+            }
+        }
+
+        return artistPlaylists.sortedBy { it.name }
+    }
+
 }

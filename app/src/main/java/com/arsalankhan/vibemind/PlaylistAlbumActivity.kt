@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.arsalankhan.vibemind.databinding.PlaylistAlbumBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -14,11 +16,13 @@ class PlaylistAlbumActivity : BaseActivity() {
     private lateinit var binding: PlaylistAlbumBinding
     private lateinit var forYouAdapter: PlaylistAdapter
     private lateinit var yourPlaylistsAdapter: PlaylistAdapter
+    private lateinit var artistPlaylistsAdapter: PlaylistAdapter // Add this
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = PlaylistAlbumBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         attachMiniPlayer(binding.miniPlayerLayout)
 
         setupToolbar()
@@ -79,6 +83,29 @@ class PlaylistAlbumActivity : BaseActivity() {
             adapter = forYouAdapter
         }
 
+        // Artist Playlists section - NEW
+        val artistPlaylists = PlaylistManager.getArtistPlaylists(allSongs)
+        if (artistPlaylists.isNotEmpty()) {
+            binding.tvArtistPlaylistsTitle.visibility = View.VISIBLE
+            binding.rvArtistPlaylists.visibility = View.VISIBLE
+
+            artistPlaylistsAdapter = PlaylistAdapter(artistPlaylists) { playlist ->
+                openPlaylistDetail(playlist)
+            }
+
+            binding.rvArtistPlaylists.apply {
+                layoutManager = LinearLayoutManager(
+                    this@PlaylistAlbumActivity,
+                    LinearLayoutManager.HORIZONTAL,
+                    false
+                )
+                adapter = artistPlaylistsAdapter
+            }
+        } else {
+            binding.tvArtistPlaylistsTitle.visibility = View.GONE
+            binding.rvArtistPlaylists.visibility = View.GONE
+        }
+
         // Your Playlists section
         refreshPlaylistViews()
     }
@@ -95,6 +122,16 @@ class PlaylistAlbumActivity : BaseActivity() {
         val userPlaylists = PlaylistManager.getUserPlaylists()
         yourPlaylistsAdapter = PlaylistAdapter(userPlaylists) { playlist ->
             openPlaylistDetail(playlist)
+        }
+
+        // Add long click listener for deletion
+        yourPlaylistsAdapter.setOnItemLongClickListener { playlist ->
+            if (PlaylistManager.canDeletePlaylist(playlist.id)) {
+                showDeletePlaylistDialog(playlist)
+                true
+            } else {
+                false
+            }
         }
 
         binding.rvYourPlaylists.apply {
@@ -114,7 +151,7 @@ class PlaylistAlbumActivity : BaseActivity() {
 
     private fun openPlaylistDetail(playlist: Playlist) {
         Intent(this, PlaylistDetailActivity::class.java).apply {
-            putExtra("PLAYLIST", playlist)
+            putExtra("PLAYLIST", playlist) // This will use Parcelable now
             startActivity(this)
         }
     }
@@ -133,5 +170,18 @@ class PlaylistAlbumActivity : BaseActivity() {
     override fun onResume() {
         super.onResume()
         refreshPlaylistViews()
+    }
+
+    private fun showDeletePlaylistDialog(playlist: Playlist) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Playlist")
+            .setMessage("Are you sure you want to delete '${playlist.name}'?")
+            .setPositiveButton("Delete") { _, _ ->
+                PlaylistManager.deletePlaylist(playlist.id)
+                refreshPlaylistViews()
+                Toast.makeText(this, "Playlist deleted", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 }

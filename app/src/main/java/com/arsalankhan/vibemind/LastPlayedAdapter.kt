@@ -19,7 +19,7 @@ class LastPlayedAdapter(
             binding.tvArtistName.text = song.artist
 
             Glide.with(binding.root.context)
-                .load(song.albumArtUri)
+                .load(song.getAlbumArtUri())
                 .placeholder(R.drawable.ic_album_art)
                 .into(binding.ivAlbumArt)
 
