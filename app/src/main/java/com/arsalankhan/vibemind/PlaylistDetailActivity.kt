@@ -15,6 +15,7 @@ class PlaylistDetailActivity : BaseActivity() {
     private lateinit var binding: ActivityPlaylistDetailBinding
     private lateinit var songAdapter: SongAdapter
     private lateinit var playlist: Playlist
+    private lateinit var allSongs: List<Song>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,14 +23,27 @@ class PlaylistDetailActivity : BaseActivity() {
         setContentView(binding.root)
         attachMiniPlayer(binding.miniPlayer)
 
-        // Get playlist using Parcelable
-        playlist = intent.getParcelableExtra("PLAYLIST") ?: run {
+        // Get playlist ID
+        val playlistId = intent.getLongExtra("PLAYLIST_ID", -1L)
+
+        // Handle Liked Songs playlist specifically - use nullable type first
+        val loadedPlaylist: Playlist? = if (playlistId == PlaylistManager.LIKED_PLAYLIST_ID) {
+            PlaylistManager.getLikedSongsPlaylist()
+        } else {
+            PlaylistManager.getPlaylistById(playlistId)
+        }
+
+        // Check if playlist was found
+        if (loadedPlaylist == null) {
             Toast.makeText(this, "Playlist not found", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
-        Log.d("PlaylistDetail", "Playlist received: ${playlist.name} with ${playlist.songs.size} songs")
+        // Now assign to the non-null variable
+        playlist = loadedPlaylist
+
+        Log.d("PlaylistDetail", "Playlist loaded: ${playlist.name} with ${playlist.songs.size} songs")
 
         setupToolbar()
         setupPlaylistHeader()
@@ -126,7 +140,7 @@ class PlaylistDetailActivity : BaseActivity() {
 
     private fun showAddSongsDialog() {
         val allSongs = SongUtils().getAllAudioFiles(this)
-        val currentPlaylistSongIds = playlist.songs.map { it.id }
+        val currentPlaylistSongIds = playlist.songs.map { it.id }.toSet()
         val availableSongs = allSongs.filter { !currentPlaylistSongIds.contains(it.id) }
 
         if (availableSongs.isEmpty()) {
@@ -134,16 +148,21 @@ class PlaylistDetailActivity : BaseActivity() {
             return
         }
 
-        val songTitles = availableSongs.map { it.title }.toTypedArray()
+        // Create a list of song display names for the dialog
+        val songDisplayNames = availableSongs.map { "${it.title} - ${it.artist}" }.toTypedArray()
 
         AlertDialog.Builder(this)
             .setTitle("Add songs to playlist")
-            .setItems(songTitles) { _, which ->
+            .setItems(songDisplayNames) { _, which ->
                 val selectedSong = availableSongs[which]
+                // Use PlaylistManager to properly add the song
+                PlaylistManager.addSongToPlaylist(this, playlist.id, selectedSong)
+
+                // Also update the local playlist for immediate UI update
                 playlist.songs.add(selectedSong)
-                PlaylistManager.saveUserPlaylists()
-                songAdapter.notifyDataSetChanged()
-                Toast.makeText(this, "Added to playlist", Toast.LENGTH_SHORT).show()
+                songAdapter.updateSongs(ArrayList(playlist.songs))
+
+                Toast.makeText(this, "Added '${selectedSong.title}' to playlist", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -154,7 +173,7 @@ class PlaylistDetailActivity : BaseActivity() {
             .setTitle("Remove Song")
             .setMessage("Remove '${song.title}' from this playlist?")
             .setPositiveButton("Remove") { _, _ ->
-                PlaylistManager.removeSongFromPlaylist(playlist.id, song.id)
+                PlaylistManager.removeSongFromPlaylist(this, playlist.id, song.id)
                 playlist.songs.removeAt(position)
                 songAdapter.notifyItemRemoved(position)
                 Toast.makeText(this, "Song removed", Toast.LENGTH_SHORT).show()

@@ -43,6 +43,7 @@ class SongAdapter(
     fun setOnItemLongClickListener(listener: (Song, Int) -> Boolean) {
         onItemLongClickListener = listener
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongViewHolder {
         val binding = ItemSongBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return SongViewHolder(binding)
@@ -68,6 +69,12 @@ class SongAdapter(
         binding.ivPlayRecommended.setOnClickListener {
             onSongClick(songList, position)
         }
+    }
+
+    fun updateSongs(newSongs: ArrayList<Song>) {
+        songList.clear() // FIXED: Changed 'songs' to 'songList'
+        songList.addAll(newSongs) // FIXED: Changed 'songs' to 'songList'
+        notifyDataSetChanged()
     }
 
     override fun getItemCount(): Int = songList.size

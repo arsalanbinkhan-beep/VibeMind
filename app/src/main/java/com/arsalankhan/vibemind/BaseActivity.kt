@@ -11,8 +11,12 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 💡 NEW: This tells the system to draw the app content behind the system bars (like the navigation bar)
         WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        // Set up song change listener - just save the last played song
+        PlayerManager.onSongChanged = { song ->
+            LastPlayedManager.saveLastPlayedSong(this, song)
+        }
     }
 
     fun attachMiniPlayer(binding: LayoutMiniPlayerBinding) {

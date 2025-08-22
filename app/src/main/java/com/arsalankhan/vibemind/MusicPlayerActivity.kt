@@ -198,8 +198,10 @@ class MusicPlayerActivity : AppCompatActivity() {
             if (PlayerManager.isPlaying()) R.drawable.ic_pause_circle else R.drawable.ic_play_circle
         )
 
-        isLiked = false
-        binding.iconHeart.setImageResource(R.drawable.ic_heart_outline)
+        isLiked = song.isLiked
+        binding.iconHeart.setImageResource(
+            if (isLiked) R.drawable.ic_heart else R.drawable.ic_heart_outline
+        )
 
         val durationMs = PlayerManager.getDuration()
         binding.textTotalTime.text = formatTime(durationMs)
@@ -252,17 +254,19 @@ class MusicPlayerActivity : AppCompatActivity() {
         }
 
         binding.iconHeart.setOnClickListener {
-            isLiked = !isLiked
             currentSong?.let { song ->
-                if (isLiked) {
-                    PlaylistManager.addToLikedSongs(song)
-                    binding.iconHeart.setImageResource(R.drawable.ic_heart)
-                    Toast.makeText(this, "Added to Liked Songs", Toast.LENGTH_SHORT).show()
-                } else {
-                    PlaylistManager.removeFromLikedSongs(song)
+                val isCurrentlyLiked = song.isLiked
+                if (isCurrentlyLiked) {
+                    PlaylistManager.removeFromLikedSongs(this, song)
                     binding.iconHeart.setImageResource(R.drawable.ic_heart_outline)
                     Toast.makeText(this, "Removed from Liked Songs", Toast.LENGTH_SHORT).show()
+                } else {
+                    PlaylistManager.addToLikedSongs(this, song)
+                    binding.iconHeart.setImageResource(R.drawable.ic_heart)
+                    Toast.makeText(this, "Added to Liked Songs", Toast.LENGTH_SHORT).show()
                 }
+                // Update the local state
+                song.isLiked = !isCurrentlyLiked
             }
         }
     }

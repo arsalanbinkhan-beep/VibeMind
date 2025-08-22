@@ -1,5 +1,6 @@
 package com.arsalankhan.vibemind
 
+import android.content.Context
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
@@ -51,5 +52,12 @@ data class Song(
         override fun newArray(size: Int): Array<Song?> {
             return arrayOfNulls(size)
         }
+    }
+
+    // ✅ Fixed version without appContext
+    fun isLiked(context: Context): Boolean {
+        val likedSongsPrefs = context.getSharedPreferences("liked_songs", Context.MODE_PRIVATE)
+        val likedSongIds = likedSongsPrefs.getStringSet("liked_song_ids", setOf()) ?: setOf()
+        return likedSongIds.contains(id.toString())
     }
 }

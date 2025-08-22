@@ -13,6 +13,7 @@ object PlayerManager {
     var currentSong: Song? = null
     var songList: List<Song> = listOf()
     var currentIndex: Int = 0
+    var onSongChanged: ((Song) -> Unit)? = null
 
     // Store application context
     private lateinit var appContext: Context
@@ -34,6 +35,9 @@ object PlayerManager {
         currentSong = list[index]
         songList = list
         currentIndex = index
+
+        // Notify that song changed
+        onSongChanged?.invoke(currentSong!!)
 
         val mediaItem = MediaItem.fromUri(currentSong!!.path)
         exoPlayer.setMediaItem(mediaItem)

@@ -61,10 +61,9 @@ class PlaylistAlbumActivity : BaseActivity() {
     }
 
     private fun handlePlaylistCreation(name: String) {
-        val newPlaylist = PlaylistManager.createNewPlaylist(name)
+        val newPlaylist = PlaylistManager.createNewPlaylist(this, name) // Pass context
         refreshPlaylistViews()
     }
-
     private fun setupPlaylistSections() {
         PlaylistManager.initialize(this)
         val allSongs = SongUtils().getAllAudioFiles(this)
@@ -83,7 +82,7 @@ class PlaylistAlbumActivity : BaseActivity() {
             adapter = forYouAdapter
         }
 
-        // Artist Playlists section - NEW
+        // Artist Playlists section
         val artistPlaylists = PlaylistManager.getArtistPlaylists(allSongs)
         if (artistPlaylists.isNotEmpty()) {
             binding.tvArtistPlaylistsTitle.visibility = View.VISIBLE
@@ -114,7 +113,7 @@ class PlaylistAlbumActivity : BaseActivity() {
         return listOf(
             PlaylistManager.getForYouPlaylist(this, allSongs),
             PlaylistManager.getMostPlayedPlaylist(this, allSongs),
-            PlaylistManager.getLikedSongsPlaylist()
+            PlaylistManager.getLikedSongsPlaylist() // This returns the Liked Songs playlist
         )
     }
 
@@ -151,11 +150,10 @@ class PlaylistAlbumActivity : BaseActivity() {
 
     private fun openPlaylistDetail(playlist: Playlist) {
         Intent(this, PlaylistDetailActivity::class.java).apply {
-            putExtra("PLAYLIST", playlist) // This will use Parcelable now
+            putExtra("PLAYLIST_ID", playlist.id) // Pass the correct ID
             startActivity(this)
         }
     }
-
     private fun navigateBackToMain() {
         val intent = Intent(this, MainActivity::class.java)
         val options = ActivityOptions.makeCustomAnimation(

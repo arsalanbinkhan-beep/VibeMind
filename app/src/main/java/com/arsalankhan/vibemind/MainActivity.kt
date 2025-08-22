@@ -60,6 +60,8 @@ class MainActivity : BaseActivity(), SensorEventListener {
         setContentView(binding.root)
         attachMiniPlayer(binding.miniPlayer)
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        PlaylistManager.initialize(this)
+
 
         val intent = Intent(this, MusicPlayerActivity::class.java)
         val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_in_up, R.anim.slide_out_down)
@@ -72,13 +74,12 @@ class MainActivity : BaseActivity(), SensorEventListener {
     override fun onResume() {
         super.onResume()
         MiniPlayerManager.refresh(this)
+        updateLastPlayedSection() // This will refresh when returning to MainActivity
 
-        // start listening for accelerometer
-        sensorManager?.registerListener(
-            this,
-            sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
+        // Update notification when activity resumes
+        if (PlayerManager.currentSong != null) {
+            NotificationManager.updateNotification(this)
+        }
     }
     override fun onPause() {
         super.onPause()
@@ -124,6 +125,7 @@ class MainActivity : BaseActivity(), SensorEventListener {
 
     private fun loadAndCategorizeSongs() {
         allSongs = SongUtils().getAllAudioFiles(this)
+        PlaylistManager.refreshLikedStatus(this, allSongs)
 
         lifecycleScope.launch {
             try {
@@ -165,9 +167,9 @@ class MainActivity : BaseActivity(), SensorEventListener {
             if (PlayerManager.currentSong?.path != selectedSong.path) {
                 PlayerManager.playSong(this, list, index)
                 PlaybackHistoryManager.incrementPlayCount(this, selectedSong.path)
-                saveLastPlayedSong(selectedSong)
                 updateLastPlayedSection()
                 MiniPlayerManager.refresh(this)
+                PlaylistManager.initialize(this)
             }
         }
 
@@ -213,29 +215,14 @@ class MainActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun updateLastPlayedSection() {
-        val prefs = getSharedPreferences("LAST_PLAYED", MODE_PRIVATE)
-        val jsonList = prefs.getString("songs", "[]")
-        val songList = mutableListOf<Song>()
-
-        try {
-            val jsonArray = org.json.JSONArray(jsonList)
-            for (i in 0 until jsonArray.length()) {
-                val obj = jsonArray.getJSONObject(i)
-                val song = allSongs.find { it.id == obj.getLong("id") }
-                if (song != null) {
-                    songList.add(song)
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        val songList = LastPlayedManager.getLastPlayedSongs(this, allSongs)
 
         val songClickListener = { list: ArrayList<Song>, index: Int ->
             val selectedSong = list[index]
             if (PlayerManager.currentSong?.path != selectedSong.path) {
                 PlayerManager.playSong(this, list, index)
                 PlaybackHistoryManager.incrementPlayCount(this, selectedSong.path)
-                saveLastPlayedSong(selectedSong)
+                // No need to manually save here - the listener in BaseActivity will handle it
                 updateLastPlayedSection()
                 MiniPlayerManager.refresh(this)
             }
