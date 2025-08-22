@@ -219,7 +219,8 @@ object PlaylistManager {
     }
 
     fun getPlaylistById(playlistId: Long): Playlist? {
-        return playlists.firstOrNull { it.id == playlistId && it.isUserCreated }
+        // Remove the "it.isUserCreated" filter to include ALL types of playlists
+        return playlists.firstOrNull { it.id == playlistId }
     }
 
     fun deletePlaylist(playlistId: Long) {
@@ -242,10 +243,15 @@ object PlaylistManager {
                     name = artist,
                     songs = songs.toMutableList(),
                     artist = artist,
-                    isUserCreated = false,
+                    isUserCreated = false, // ← This is correct
                     isArtistPlaylist = true
                 )
                 artistPlaylists.add(playlist)
+
+                // Make sure to add to the main playlists list too!
+                if (playlists.none { it.id == playlist.id }) {
+                    playlists.add(playlist)
+                }
             }
         }
         return artistPlaylists.sortedBy { it.name }
@@ -264,7 +270,7 @@ object PlaylistManager {
             LIKED_PLAYLIST_ID -> getLikedSongsPlaylist()
             MOST_PLAYED_PLAYLIST_ID -> getMostPlayedPlaylist(context, allSongs)
             FOR_YOU_PLAYLIST_ID -> getForYouPlaylist(context, allSongs)
-            else -> playlists.firstOrNull { it.id == playlistId }
+            else -> playlists.firstOrNull { it.id == playlistId } // Remove filter here too
         }
     }
 }
