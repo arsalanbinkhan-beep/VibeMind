@@ -20,6 +20,7 @@ import org.json.JSONObject
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
+import android.view.View
 import kotlin.math.sqrt
 
 
@@ -58,23 +59,23 @@ class MainActivity : BaseActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         attachMiniPlayer(binding.miniPlayer)
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         PlaylistManager.initialize(this)
 
-
+        setupNavBarListeners()
+        checkAndLoadSongs()
         val intent = Intent(this, MusicPlayerActivity::class.java)
         val options = ActivityOptions.makeCustomAnimation(this, R.anim.slide_in_up, R.anim.slide_out_down)
         startActivity(intent, options.toBundle())
-
-
-        setupNavBarListeners()
-        checkAndLoadSongs()
     }
     override fun onResume() {
         super.onResume()
+        refreshAllUI()
         MiniPlayerManager.refresh(this)
         updateLastPlayedSection() // This will refresh when returning to MainActivity
+        setupShakeDetection()
 
         // Update notification when activity resumes
         if (PlayerManager.currentSong != null) {
@@ -84,6 +85,11 @@ class MainActivity : BaseActivity(), SensorEventListener {
     override fun onPause() {
         super.onPause()
         sensorManager?.unregisterListener(this)
+    }
+
+    private fun setupShakeDetection() {
+        val sensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        sensorManager?.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL)
     }
 
 
@@ -217,19 +223,27 @@ class MainActivity : BaseActivity(), SensorEventListener {
     private fun updateLastPlayedSection() {
         val songList = LastPlayedManager.getLastPlayedSongs(this, allSongs)
 
-        val songClickListener = { list: ArrayList<Song>, index: Int ->
-            val selectedSong = list[index]
-            if (PlayerManager.currentSong?.path != selectedSong.path) {
-                PlayerManager.playSong(this, list, index)
-                PlaybackHistoryManager.incrementPlayCount(this, selectedSong.path)
-                // No need to manually save here - the listener in BaseActivity will handle it
-                updateLastPlayedSection()
-                MiniPlayerManager.refresh(this)
-            }
-        }
+        // Show/hide section based on content
+        if (songList.isEmpty()) {
+            binding.tvLastPlayedSongs.visibility = View.GONE
+            binding.recyclerViewLastPlayedSongs.visibility = View.GONE
+        } else {
+            binding.tvLastPlayedSongs.visibility = View.VISIBLE
+            binding.recyclerViewLastPlayedSongs.visibility = View.VISIBLE
 
-        binding.recyclerViewLastPlayedSongs.adapter =
-            LastPlayedAdapter(ArrayList(songList), songClickListener)
+            val songClickListener = { list: ArrayList<Song>, index: Int ->
+                val selectedSong = list[index]
+                if (PlayerManager.currentSong?.path != selectedSong.path) {
+                    PlayerManager.playSong(this, list, index)
+                    PlaybackHistoryManager.incrementPlayCount(this, selectedSong.path)
+                    updateLastPlayedSection()
+                    MiniPlayerManager.refresh(this)
+                }
+            }
+
+            binding.recyclerViewLastPlayedSongs.adapter =
+                LastPlayedAdapter(ArrayList(songList), songClickListener)
+        }
     }
 
 
@@ -342,9 +356,13 @@ class MainActivity : BaseActivity(), SensorEventListener {
                 val obj = jsonArray.getJSONObject(0)
                 val song = allSongs.find { it.id == obj.getLong("id") }
                 if (song != null) {
+                    // Just prepare the song but don't play it
                     val songIndex = allSongs.indexOfFirst { it.id == song.id }
                     if (songIndex != -1) {
-                        PlayerManager.playSong(this, allSongs, songIndex)
+                        // Only prepare, don't play
+                        PlayerManager.currentSong = song
+                        PlayerManager.songList = allSongs
+                        PlayerManager.currentIndex = songIndex
                         MiniPlayerManager.refresh(this)
                     }
                 }
@@ -374,12 +392,12 @@ class MainActivity : BaseActivity(), SensorEventListener {
             val delta = accelCurrent - accelLast
             shake = shake * 0.9f + delta
 
-            // ✅ Check settings in real-time instead of caching them
+
             val prefs = getSharedPreferences("app_settings", MODE_PRIVATE)
             val shakeEnabled = prefs.getBoolean("shake_to_change", false)
             val sensitivity = prefs.getInt("shake_sensitivity", 50)
 
-            // ✅ Only process shake if the feature is enabled
+
             val threshold = 15 - (sensitivity / 10f) // Same formula as MusicPlayerActivity
             if (shakeEnabled && shake > threshold) {
                 val now = System.currentTimeMillis()
@@ -396,6 +414,20 @@ class MainActivity : BaseActivity(), SensorEventListener {
         // not used
     }
 
+    private fun refreshAllUI() {
+        runOnUiThread {
+            // Refresh mini player
+            MiniPlayerManager.refresh(this)
+
+            // Refresh last played section
+            updateLastPlayedSection()
+
+            // Refresh adapters if needed
+            binding.recyclerViewSongs.adapter?.notifyDataSetChanged()
+            binding.recyclerViewRecommendedSongs.adapter?.notifyDataSetChanged()
+            binding.recyclerViewLastPlayedSongs.adapter?.notifyDataSetChanged()
+        }
+    }
 
 
 }

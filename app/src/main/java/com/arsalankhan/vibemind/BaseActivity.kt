@@ -24,6 +24,7 @@ open class BaseActivity : AppCompatActivity() {
         MiniPlayerManager.bindMiniPlayer(this, binding)
     }
 
+
     override fun onResume() {
         super.onResume()
         miniPlayerBinding?.let {
@@ -33,10 +34,16 @@ open class BaseActivity : AppCompatActivity() {
         if (PlayerManager.currentSong != null) {
             NotificationManager.updateNotification(this)
         }
+        if (!isFinishing && !isDestroyed) {
+            miniPlayerBinding?.let {
+                MiniPlayerManager.refresh(this)
+            }
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        // Clear reference to avoid leaks
         _miniPlayerBinding = null
     }
 }

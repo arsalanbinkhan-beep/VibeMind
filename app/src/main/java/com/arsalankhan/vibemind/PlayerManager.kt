@@ -2,9 +2,12 @@ package com.arsalankhan.vibemind
 
 import android.content.Context
 import android.os.Looper
+import android.util.Log
+import androidx.annotation.OptIn
 import androidx.core.os.postDelayed
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 
 object PlayerManager {
@@ -18,6 +21,7 @@ object PlayerManager {
 
     // Store application context
     private lateinit var appContext: Context
+
 
     fun init(context: Context) {
         appContext = context.applicationContext
@@ -44,7 +48,13 @@ object PlayerManager {
         android.os.Handler(Looper.getMainLooper()).postDelayed({
             NotificationManager.startNotificationService(context)
         }, 100)
+        if (index !in list.indices) {
+            Log.e("PlayerManager", "Invalid index: $index, list size: ${list.size}")
+            return
+        }
+        init(context)
     }
+
 
     fun pause() {
         player?.pause()
@@ -59,6 +69,7 @@ object PlayerManager {
             NotificationManager.updateNotification(appContext)
         }
     }
+
 
     fun isPlaying(): Boolean = player?.isPlaying ?: false
 
@@ -97,6 +108,7 @@ object PlayerManager {
     }
 
     // ✅ FIXED: This method now returns the correct audio session ID from the player
+    @OptIn(UnstableApi::class)
     fun getAudioSessionId(): Int {
         return player?.audioSessionId ?: -1
     }
@@ -104,5 +116,13 @@ object PlayerManager {
     // 💡 NEW: Method to get the player instance, used by SettingsActivity
     fun getPlayer(): ExoPlayer? {
         return player
+    }
+    fun cleanup() {
+        player?.release()
+        player = null
+        currentSong = null
+        songList = emptyList()
+        currentIndex = 0
+        onSongChanged = null
     }
 }

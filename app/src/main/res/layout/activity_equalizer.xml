@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="@drawable/background"
     android:fitsSystemWindows="true"
     android:padding="16dp">
 
@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:text="Equalizer"
-            android:textColor="@color/equalizer_text_dark"
+            android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:text="+15 dB"
                 android:textSize="14sp"
-                android:textColor="@color/equalizer_text_dark"
+                android:textColor="@color/white"
                 android:layout_marginBottom="8dp"/>
 
             <View
