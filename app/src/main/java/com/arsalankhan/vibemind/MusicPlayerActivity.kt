@@ -131,16 +131,16 @@ class MusicPlayerActivity : AppCompatActivity() {
             }
         }
 
-        // Apply the saved repeat mode to the player
+        // 💡 FIX: Use getPlayer() instead of the removed exoPlayer variable
         when (repeatMode) {
             REPEAT_OFF -> {
-                PlayerManager.exoPlayer.repeatMode = Player.REPEAT_MODE_OFF
+                PlayerManager.getPlayer()?.repeatMode = Player.REPEAT_MODE_OFF
             }
             REPEAT_ALL -> {
-                PlayerManager.exoPlayer.repeatMode = Player.REPEAT_MODE_ALL
+                PlayerManager.getPlayer()?.repeatMode = Player.REPEAT_MODE_ALL
             }
             REPEAT_ONE -> {
-                PlayerManager.exoPlayer.repeatMode = Player.REPEAT_MODE_ONE
+                PlayerManager.getPlayer()?.repeatMode = Player.REPEAT_MODE_ONE
             }
         }
 
@@ -159,16 +159,13 @@ class MusicPlayerActivity : AppCompatActivity() {
                 if (state == Player.STATE_ENDED) {
                     when (repeatMode) {
                         REPEAT_ONE -> {
-                            // For repeat one, just seek to beginning and play again
                             PlayerManager.seekTo(0)
                             PlayerManager.play()
                         }
                         REPEAT_ALL -> {
-                            // For repeat all, go to next song (which will loop to beginning if at end)
                             skipToNext()
                         }
                         else -> {
-                            // For no repeat, just go to next song normally
                             skipToNext()
                         }
                     }
@@ -213,7 +210,6 @@ class MusicPlayerActivity : AppCompatActivity() {
             binding.circularProgress.progress = progressPercent.toInt()
         }
 
-        // Update icons
         updateRepeatIcon()
         updateShuffleIcon()
     }
@@ -265,7 +261,6 @@ class MusicPlayerActivity : AppCompatActivity() {
                     binding.iconHeart.setImageResource(R.drawable.ic_heart)
                     Toast.makeText(this, "Added to Liked Songs", Toast.LENGTH_SHORT).show()
                 }
-                // Update the local state
                 song.isLiked = !isCurrentlyLiked
             }
         }
@@ -278,16 +273,16 @@ class MusicPlayerActivity : AppCompatActivity() {
             else -> REPEAT_OFF
         }
 
-        // Apply the repeat mode to the player
+        // 💡 FIX: Use getPlayer() here as well
         when (repeatMode) {
             REPEAT_OFF -> {
-                PlayerManager.exoPlayer.repeatMode = Player.REPEAT_MODE_OFF
+                PlayerManager.getPlayer()?.repeatMode = Player.REPEAT_MODE_OFF
             }
             REPEAT_ALL -> {
-                PlayerManager.exoPlayer.repeatMode = Player.REPEAT_MODE_ALL
+                PlayerManager.getPlayer()?.repeatMode = Player.REPEAT_MODE_ALL
             }
             REPEAT_ONE -> {
-                PlayerManager.exoPlayer.repeatMode = Player.REPEAT_MODE_ONE
+                PlayerManager.getPlayer()?.repeatMode = Player.REPEAT_MODE_ONE
             }
         }
     }
@@ -335,11 +330,9 @@ class MusicPlayerActivity : AppCompatActivity() {
     fun skipToNext() {
         when (repeatMode) {
             REPEAT_ALL -> {
-                // For repeat all, loop back to beginning if at end
                 currentIndex = if (currentIndex + 1 >= songList.size) 0 else currentIndex + 1
             }
             else -> {
-                // Normal behavior for other modes
                 currentIndex = if (isShuffle) (songList.indices).random()
                 else (currentIndex + 1) % songList.size
             }
@@ -367,10 +360,9 @@ class MusicPlayerActivity : AppCompatActivity() {
         prefs.edit()
             .putInt("last_index", PlayerManager.currentIndex)
             .putLong("last_position", PlayerManager.getCurrentPosition())
-            .putInt("repeat_mode", repeatMode) // Save repeat mode
+            .putInt("repeat_mode", repeatMode)
             .apply()
 
-        // Unregister the shake listener
         sensorManager.unregisterListener(sensorListener)
     }
 
@@ -411,7 +403,6 @@ class MusicPlayerActivity : AppCompatActivity() {
             return
         }
 
-        // Create custom dialog with playlist items showing album art
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_playlist_selector, null)
         val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerViewPlaylists)
 
@@ -424,8 +415,6 @@ class MusicPlayerActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Song already in playlist", Toast.LENGTH_SHORT).show()
             }
-            // Dismiss dialog after selection
-            // You'll need to keep a reference to the dialog to dismiss it
         }
 
         recyclerView.adapter = adapter
@@ -436,7 +425,7 @@ class MusicPlayerActivity : AppCompatActivity() {
             .setNegativeButton("Cancel", null)
             .show()
     }
-    // Add this companion object method to MusicPlayerActivity
+
     companion object {
         fun skipToNext(context: Context) {
             try {
@@ -464,5 +453,4 @@ class MusicPlayerActivity : AppCompatActivity() {
             }
         }
     }
-
 }

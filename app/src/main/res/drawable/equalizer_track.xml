@@ -1,0 +1,17 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background -->
+    <item android:id="@android:id/background">
+        <shape>
+            <size android:width="4dp" />
+            <solid android:color="#E0E0E0" /> <!-- light gray -->
+        </shape>
+    </item>
+
+    <!-- Progress (purple line) -->
+    <item android:id="@android:id/progress">
+        <shape>
+            <size android:width="4dp" />
+            <solid android:color="@color/equalizer_primary" />
+        </shape>
+    </item>
+</layer-list>

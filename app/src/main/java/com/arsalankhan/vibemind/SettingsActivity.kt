@@ -14,6 +14,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
+import androidx.media3.common.Player
 import com.arsalankhan.vibemind.databinding.ActivitySettingsBinding
 import java.io.File
 
@@ -31,6 +32,13 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
+    // 💡 NEW: A listener to react to player state changes
+    private val playerStateListener = object : Player.Listener {
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            updateEqualizerButtonState()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
@@ -47,6 +55,32 @@ class SettingsActivity : AppCompatActivity() {
         setupNotificationSettings()
         setupHeadphoneSettings()
         setupAboutSection()
+        setupEqualizerSettings() // This is now a one-time setup
+    }
+
+    // 💡 NEW: Register the listener when the activity becomes visible
+    override fun onStart() {
+        super.onStart()
+        PlayerManager.getPlayer()?.addListener(playerStateListener)
+        updateEqualizerButtonState()
+    }
+
+    // 💡 NEW: Unregister the listener when the activity is not visible
+    override fun onStop() {
+        super.onStop()
+        PlayerManager.getPlayer()?.removeListener(playerStateListener)
+    }
+
+    // 💡 NEW: A dedicated function to update the button's state
+    private fun updateEqualizerButtonState() {
+        val audioSessionId = PlayerManager.getAudioSessionId()
+        if (audioSessionId == -1) {
+            binding.radioCustomEqualizer.isEnabled = false
+            binding.radioCustomEqualizer.text = getString(R.string.setting_equalizer_custom_disabled)
+        } else {
+            binding.radioCustomEqualizer.isEnabled = true
+            binding.radioCustomEqualizer.text = getString(R.string.setting_equalizer_custom)
+        }
     }
 
     // 🔙 Back button
@@ -60,6 +94,47 @@ class SettingsActivity : AppCompatActivity() {
             )
             startActivity(intent, options.toBundle())
             finish()
+        }
+    }
+
+    // 💡 MODIFIED: The equalizer setup now only handles the click logic
+    private fun setupEqualizerSettings() {
+        val equalizerPref = prefs.getInt("equalizer_preference", 0)
+        if (equalizerPref == 0) {
+            binding.radioSystemEqualizer.isChecked = true
+        } else {
+            binding.radioCustomEqualizer.isChecked = true
+        }
+
+        // This will now use the up-to-date state from the listener
+        binding.radioGroupEqualizer.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.radioSystemEqualizer -> {
+                    prefs.edit { putInt("equalizer_preference", 0) }
+                    val intent = Intent(android.media.audiofx.AudioEffect.ACTION_DISPLAY_AUDIO_EFFECT_CONTROL_PANEL).apply {
+                        putExtra(android.media.audiofx.AudioEffect.EXTRA_PACKAGE_NAME, packageName)
+                        putExtra(android.media.audiofx.AudioEffect.EXTRA_AUDIO_SESSION, PlayerManager.getAudioSessionId())
+                    }
+                    if (intent.resolveActivity(packageManager) != null) {
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(this, "System equalizer not found.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                R.id.radioCustomEqualizer -> {
+                    if (binding.radioCustomEqualizer.isEnabled) {
+                        prefs.edit { putInt("equalizer_preference", 1) }
+                        val audioSessionId = PlayerManager.getAudioSessionId()
+                        val intent = Intent(this, EqualizerActivity::class.java).apply {
+                            putExtra("AUDIO_SESSION_ID", audioSessionId)
+                        }
+                        startActivity(intent)
+                    } else {
+                        // Re-select the system equalizer if the custom one is disabled
+                        binding.radioSystemEqualizer.isChecked = true
+                    }
+                }
+            }
         }
     }
 
@@ -107,18 +182,14 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     // ▶ Playback
-// ▶ Playback
     private fun setupPlaybackSettings() {
-        // Get current settings
         val shakeEnabled = prefs.getBoolean("shake_to_change", false)
         val shakeSensitivity = prefs.getInt("shake_sensitivity", 50)
 
-        // Set initial states
         binding.switchShakeToChangeSong.isChecked = shakeEnabled
         binding.seekBarShakeSensitivity.progress = shakeSensitivity
         binding.tvShakeSensitivity.text = getString(R.string.shake_sensitivity, shakeSensitivity)
 
-        // Show/hide sensitivity controls based on initial state
         binding.seekBarShakeSensitivity.visibility = if (shakeEnabled) View.VISIBLE else View.GONE
         binding.tvShakeSensitivity.visibility = if (shakeEnabled) View.VISIBLE else View.GONE
 
@@ -136,8 +207,6 @@ class SettingsActivity : AppCompatActivity() {
             prefs.edit { putBoolean("shake_to_change", checked) }
             binding.seekBarShakeSensitivity.visibility = if (checked) View.VISIBLE else View.GONE
             binding.tvShakeSensitivity.visibility = if (checked) View.VISIBLE else View.GONE
-
-            // ✅ No need to enable/disable sensor here - it's checked in real-time in onSensorChanged
         }
 
         binding.seekBarShakeSensitivity.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -153,13 +222,11 @@ class SettingsActivity : AppCompatActivity() {
 
     // 📂 Library
     private fun setupLibrarySettings() {
-        // Auto scan for new music
         binding.switchAutoScan.isChecked = prefs.getBoolean("auto_scan", true)
         binding.switchAutoScan.setOnCheckedChangeListener { _, checked ->
             prefs.edit { putBoolean("auto_scan", checked) }
         }
 
-        // Default sort order (Title, Artist, Date Added, Play Count)
         val sortOrderAdapter = ArrayAdapter.createFromResource(
             this,
             R.array.sort_order_options,
@@ -167,31 +234,20 @@ class SettingsActivity : AppCompatActivity() {
         ).also {
             it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         }
-
         binding.spinnerSortOrder.adapter = sortOrderAdapter
-        binding.spinnerSortOrder.setSelection(prefs.getInt("sort_order", 0)) // Default to Title
+        binding.spinnerSortOrder.setSelection(prefs.getInt("sort_order", 0))
         binding.spinnerSortOrder.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
-                prefs.edit {
-                    putInt("sort_order", pos)
-                    // You'll need to reload your song list when this changes
-                    // Consider adding a callback to notify MainActivity
-                }
+                prefs.edit { putInt("sort_order", pos) }
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // Show hidden audio files (files/folders starting with .)
         binding.switchShowHiddenAudio.isChecked = prefs.getBoolean("show_hidden", false)
         binding.switchShowHiddenAudio.setOnCheckedChangeListener { _, checked ->
-            prefs.edit {
-                putBoolean("show_hidden", checked)
-                // You'll need to reload your song list when this changes
-                // Consider adding a callback to notify MainActivity
-            }
+            prefs.edit { putBoolean("show_hidden", checked) }
         }
 
-        // Scan music button
         binding.btnScanLocalMusic.setOnClickListener {
             val cursor = contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -199,10 +255,10 @@ class SettingsActivity : AppCompatActivity() {
                 MediaStore.Audio.Media.IS_MUSIC + "!= 0",
                 null,
                 when (prefs.getInt("sort_order", 0)) {
-                    0 -> MediaStore.Audio.Media.TITLE + " ASC" // Title
-                    1 -> MediaStore.Audio.Media.ARTIST + " ASC" // Artist
-                    2 -> MediaStore.Audio.Media.DATE_ADDED + " DESC" // Date Added
-                    3 -> "CASE WHEN ${MediaStore.Audio.Media.DURATION} > 0 THEN 1 ELSE 0 END DESC" // Play Count (would need custom implementation)
+                    0 -> MediaStore.Audio.Media.TITLE + " ASC"
+                    1 -> MediaStore.Audio.Media.ARTIST + " ASC"
+                    2 -> MediaStore.Audio.Media.DATE_ADDED + " DESC"
+                    3 -> "CASE WHEN ${MediaStore.Audio.Media.DURATION} > 0 THEN 1 ELSE 0 END DESC"
                     else -> MediaStore.Audio.Media.TITLE + " ASC"
                 }
             )
@@ -211,7 +267,6 @@ class SettingsActivity : AppCompatActivity() {
             Toast.makeText(this, "Found $count songs", Toast.LENGTH_LONG).show()
         }
 
-        // Choose folders button
         binding.btnChooseFolders.setOnClickListener {
             folderPicker.launch(null)
         }
@@ -246,7 +301,6 @@ class SettingsActivity : AppCompatActivity() {
         binding.switchShowMediaControls.isChecked = prefs.getBoolean("show_media_controls", true)
         binding.switchShowMediaControls.setOnCheckedChangeListener { _, checked ->
             prefs.edit { putBoolean("show_media_controls", checked) }
-            // Update notification immediately when setting changes
             if (checked && PlayerManager.currentSong != null) {
                 NotificationManager.updateNotification(this@SettingsActivity)
             } else {
@@ -259,28 +313,22 @@ class SettingsActivity : AppCompatActivity() {
         binding.radioGroupNotificationStyle.setOnCheckedChangeListener { _, id ->
             val newStyle = if (id == R.id.radioCompactStyle) 0 else 1
             prefs.edit { putInt("notification_style", newStyle) }
-            // Update notification with new style
             if (PlayerManager.currentSong != null) {
                 NotificationManager.updateNotification(this@SettingsActivity)
             }
         }
     }
 
-
-    // 🎧 Headphones
     // 🎧 Headphones
     private fun setupHeadphoneSettings() {
-        // Get current settings
         val resumeOnHeadphone = prefs.getBoolean("resume_on_headphone", true)
         val pauseOnDisconnect = prefs.getBoolean("pause_on_headphone_disconnect", true)
         val bluetoothAutoPlay = prefs.getBoolean("bluetooth_autoplay", true)
 
-        // Set switch states
         binding.switchResumeOnHeadphonePlug.isChecked = resumeOnHeadphone
         binding.switchPauseOnHeadphoneDisconnect.isChecked = pauseOnDisconnect
         binding.switchBluetoothAutoPlay.isChecked = bluetoothAutoPlay
 
-        // Apply initial states
         if (resumeOnHeadphone) {
             HeadphoneControls.enableResumeOnPlug(this)
         } else {
@@ -299,7 +347,6 @@ class SettingsActivity : AppCompatActivity() {
             HeadphoneControls.disableBluetoothAutoPlay(this)
         }
 
-        // Resume playback when headphones are plugged in
         binding.switchResumeOnHeadphonePlug.setOnCheckedChangeListener { _, checked ->
             prefs.edit { putBoolean("resume_on_headphone", checked) }
             if (checked) {
@@ -309,7 +356,6 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        // Pause playback when headphones are unplugged
         binding.switchPauseOnHeadphoneDisconnect.setOnCheckedChangeListener { _, checked ->
             prefs.edit { putBoolean("pause_on_headphone_disconnect", checked) }
             if (checked) {
@@ -319,7 +365,6 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        // Auto-play when Bluetooth device connects
         binding.switchBluetoothAutoPlay.setOnCheckedChangeListener { _, checked ->
             prefs.edit { putBoolean("bluetooth_autoplay", checked) }
             if (checked) {
@@ -329,12 +374,12 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
     }
+
     // ℹ About
     private fun setupAboutSection() {
         binding.tvAppVersion.text = getString(R.string.about_app_version, "1.0.0")
         binding.tvDeveloperInfo.text = getString(R.string.about_developer_info)
 
-        // ⭐ Rate app
         binding.tvRateApp.setOnClickListener {
             val uri = Uri.parse("market://details?id=$packageName")
             val goToMarket = Intent(Intent.ACTION_VIEW, uri)
@@ -342,7 +387,6 @@ class SettingsActivity : AppCompatActivity() {
             catch (e: Exception) { Toast.makeText(this, "Play Store not found", Toast.LENGTH_SHORT).show() }
         }
 
-        // ✉ Feedback
         binding.tvFeedbackBugReport.setOnClickListener {
             val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
                 data = Uri.parse("mailto:developer@email.com")
@@ -351,7 +395,6 @@ class SettingsActivity : AppCompatActivity() {
             startActivity(Intent.createChooser(emailIntent, "Send Feedback"))
         }
 
-        // 📜 Open source licenses (✅ example activity)
         binding.tvOpenSourceLicenses.setOnClickListener {
             startActivity(Intent(this, LicensesActivity::class.java))
         }

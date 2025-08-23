@@ -98,4 +98,18 @@
     <string name="headphone_resume">Resume on headphone plug</string>
     <string name="headphone_pause">Pause on headphone unplug</string>
     <string name="bluetooth_autoplay">Auto-play on Bluetooth connect</string>
+
+    <string name="setting_equalizer_custom_disabled">Custom Equalizer (Play a song)</string>
+
+    <string name="equalizer_title">Equalizer</string>
+    <string name="equalizer_preset_balanced">Balanced</string>
+    <string name="equalizer_preset_bass_boost">Bass boost</string>
+    <string name="equalizer_preset_smooth">Smooth</string>
+    <string name="equalizer_preset_dynamic">Dynamic</string>
+    <string name="equalizer_preset_clear">Clear</string>
+    <string name="equalizer_preset_treble_boost">Treble boost</string>
+    <string name="equalizer_preset_custom">Custom</string>
+    <string name="equalizer_description">Set the sound just how you like it.</string>
+    <string name="go_back">Go Back</string>
+
 </resources>

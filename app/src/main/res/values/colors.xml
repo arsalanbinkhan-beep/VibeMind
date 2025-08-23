@@ -23,16 +23,13 @@
     <color name="md_cyan_A200">#18FFFF</color>
     <color name="md_cyan_A400">#00E5FF</color>
     <color name="md_cyan_A700">#00B8D4</color>
-
     <color name="background_dark">#121212</color>
     <color name="nav_bar_background">#1C1C1C</color> <color name="mini_player_background">#2C2C2C</color>
     <color name="recyclerview_background">#2A2A2A</color>
     <color name="album_art_placeholder_bg">#4A4A4A</color>
     <color name="rounded_background_color">#2A2A2A</color> <color name="text_primary">#FFFFFF</color>
     <color name="text_secondary">#AAAAAA</color> <color name="text_accent">#BB86FC</color>
-
     <color name="icon_color">#E0E0E0</color>
-
     <color name="nav_item_active">#BB86FC</color>
     <color name="nav_item_inactive">#6A6A6A</color>
     <color name="button_selected_bg">#BB86FC</color>
@@ -68,4 +65,18 @@
     <color name="subtle_text_inactive_icons">#7B68EE</color>
     <color name="blur_overlay">#66000000</color>
     <color name="semi_transparent_secondary_background">#99292A3D</color>
+    <color name="background">#FF121212</color> <!-- Dark background (assuming from your previous layouts) -->
+    <color name="background_color_secondary">#FF1D1D1D</color>
+    <color name="equalizer_background_light">#FFFDFDFD</color> <!-- Light background for the main content area -->
+    <color name="equalizer_slider_blue_active">#FF4285F4</color> <!-- Blue for active part of sliders -->
+    <color name="equalizer_slider_blue_inactive">#FFBBDEFB</color> <!-- Lighter blue for inactive part of sliders -->
+    <color name="equalizer_slider_thumb">#FF4285F4</color> <!-- Blue for slider thumb -->
+    <color name="equalizer_preset_button_background">#FFF5F5F5</color> <!-- Light background for preset buttons -->
+    <color name="equalizer_preset_button_text">#FF333333</color> <!-- Dark text for preset buttons -->
+    <color name="equalizer_custom_button_background">#FF7E57C2</color> <!-- Your purple accent for the Custom button -->
+    <color name="equalizer_custom_button_text">#FFFFFFFF</color> <!-- White text for Custom button -->
+    <color name="equalizer_text_dark">#222222</color>
+    <color name="equalizer_text_light_gray">#FF888888</color> <!-- Lighter gray text for description -->
+    <color name="equalizer_primary">#9C27B0</color> <!-- replace with your code -->
+
 </resources>
