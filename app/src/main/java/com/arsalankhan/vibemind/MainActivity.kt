@@ -356,13 +356,13 @@ class MainActivity : BaseActivity(), SensorEventListener {
                 val obj = jsonArray.getJSONObject(0)
                 val song = allSongs.find { it.id == obj.getLong("id") }
                 if (song != null) {
-                    // Just prepare the song but don't play it
                     val songIndex = allSongs.indexOfFirst { it.id == song.id }
                     if (songIndex != -1) {
-                        // Only prepare, don't play
+                        PlayerManager.prepareSong(this, allSongs, songIndex) // 👈 actually prepare!
                         PlayerManager.currentSong = song
                         PlayerManager.songList = allSongs
                         PlayerManager.currentIndex = songIndex
+
                         MiniPlayerManager.refresh(this)
                     }
                 }

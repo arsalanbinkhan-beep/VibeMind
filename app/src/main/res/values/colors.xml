@@ -7,6 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="equalizer_preset_button">#4A4A4A</color>
+    <color name="equalizer_custom_button">#FFD700</color>
 
     <!-- cyan -->
     <color name="md_cyan_50">#E0F7FA</color>
