@@ -389,7 +389,7 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.tvFeedbackBugReport.setOnClickListener {
             val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                data = Uri.parse("mailto:developer@email.com")
+                data = Uri.parse("mailto:arsalanbinkhan@gmail.com")
                 putExtra(Intent.EXTRA_SUBJECT, "Feedback for VibeMind")
             }
             startActivity(Intent.createChooser(emailIntent, "Send Feedback"))

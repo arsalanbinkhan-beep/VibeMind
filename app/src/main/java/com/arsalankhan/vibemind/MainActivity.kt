@@ -2,6 +2,7 @@ package com.arsalankhan.vibemind
 
 import android.Manifest
 import android.app.ActivityOptions
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.SensorManager
@@ -20,7 +21,9 @@ import org.json.JSONObject
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
+import android.net.ConnectivityManager
 import android.view.View
+import android.widget.Toast
 import kotlin.math.sqrt
 
 
@@ -133,36 +136,72 @@ class MainActivity : BaseActivity(), SensorEventListener {
         allSongs = SongUtils().getAllAudioFiles(this)
         PlaylistManager.refreshLikedStatus(this, allSongs)
 
+        // First try to load from cache
+        val cachedData = GeminiCacheManager.getCachedSongs(this)
+        if (cachedData != null) {
+            try {
+                val categorizedSongs = parseCategorizedSongsJson(cachedData)
+                applyCategorizedSongs(categorizedSongs)
+                updateUI()
+                Log.d("GeminiCache", "Using cached data")
+                return
+            } catch (e: Exception) {
+                Log.e("GeminiCache", "Error parsing cached data, fetching fresh", e)
+                // If cached data is corrupt, clear it and fetch fresh
+                GeminiCacheManager.clearCache(this)
+            }
+        }
+
+        // If no cache or cache invalid, fetch from API
+        fetchFromGeminiApi()
+    }
+    private fun fetchFromGeminiApi() {
+        if (!isNetworkAvailable()) {
+            Toast.makeText(this, "No internet connection. Using cached data if available.", Toast.LENGTH_SHORT).show()
+            applyFallbackSongs()
+            updateUI()
+            return
+        }
         lifecycleScope.launch {
             try {
                 val songTitles = allSongs.map { it.title }
                 val categorizedSongsJson = withContext(Dispatchers.IO) {
                     GeminiApi(geminiApiKey).getCategorizedSongs(songTitles)
                 }
+
+                // Save to cache
+                GeminiCacheManager.saveCategorizedSongs(this@MainActivity, categorizedSongsJson)
+
                 val categorizedSongs = parseCategorizedSongsJson(categorizedSongsJson)
-
-                // Filter songs based on the Gemini response with prefixes
-                popSongs = allSongs.filter { categorizedSongs["Pop"]?.contains(it.title) == true }
-                rockSongs = allSongs.filter { categorizedSongs["Rock"]?.contains(it.title) == true }
-                epicSongs = allSongs.filter { categorizedSongs["Epic"]?.contains(it.title) == true }
-                lofiSongs = allSongs.filter { categorizedSongs["Lofi"]?.contains(it.title) == true }
-
-                forYouSongs = allSongs.shuffled().take(5)
+                applyCategorizedSongs(categorizedSongs)
                 updateUI()
 
+                Log.d("GeminiApi", "Data fetched and cached successfully")
+
             } catch (e: Exception) {
-                Log.e("GeminiApi", "Error categorizing songs: ${e.message}", e)
-                // Fallback logic if the API call fails
-                // Note: Without the 'category' property in the Song data class,
-                // a proper fallback would require a different method, but we'll
-                // keep a basic random selection here.
-                popSongs = allSongs.shuffled().take(5)
-                rockSongs = allSongs.shuffled().take(5)
-                epicSongs = allSongs.shuffled().take(5)
-                lofiSongs = allSongs.shuffled().take(5)
-                forYouSongs = allSongs.shuffled()
-                updateUI() }
+                Log.e("GeminiApi", "Error fetching from API: ${e.message}", e)
+
+                // Fallback to random songs if both cache and API fail
+                applyFallbackSongs()
+                updateUI()
+            }
         }
+    }
+    private fun applyCategorizedSongs(categorizedSongs: Map<String, List<String>>) {
+        // Filter songs based on the Gemini response
+        popSongs = allSongs.filter { categorizedSongs["Pop"]?.contains(it.title) == true }
+        rockSongs = allSongs.filter { categorizedSongs["Rock"]?.contains(it.title) == true }
+        epicSongs = allSongs.filter { categorizedSongs["Epic"]?.contains(it.title) == true }
+        lofiSongs = allSongs.filter { categorizedSongs["Lofi"]?.contains(it.title) == true }
+        forYouSongs = allSongs.shuffled().take(5)
+    }
+    private fun applyFallbackSongs() {
+        // Fallback logic if both cache and API fail
+        popSongs = allSongs.shuffled().take(5)
+        rockSongs = allSongs.shuffled().take(5)
+        epicSongs = allSongs.shuffled().take(5)
+        lofiSongs = allSongs.shuffled().take(5)
+        forYouSongs = allSongs.shuffled()
     }
 
     private fun updateUI() {
@@ -428,6 +467,19 @@ class MainActivity : BaseActivity(), SensorEventListener {
             binding.recyclerViewLastPlayedSongs.adapter?.notifyDataSetChanged()
         }
     }
+    private fun refreshGeminiData() {
+        // Clear cache and force fresh fetch
+        GeminiCacheManager.clearCache(this)
+        fetchFromGeminiApi()
+    }
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val networkInfo = connectivityManager.activeNetworkInfo
+        return networkInfo != null && networkInfo.isConnected
+    }
+
+
+
 
 
 }

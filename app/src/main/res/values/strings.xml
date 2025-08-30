@@ -67,7 +67,7 @@
     <!-- About/Help -->
     <string name="about_help_section_title">About / Help</string>
     <string name="about_app_version">VibeMind %1$s</string>
-    <string name="about_developer_info">Developed by Arsalan Khan</string>
+    <string name="about_developer_info">Developed by Arsalan Khan And Zain Ansari</string>
     <string name="about_rate_app">Rate VibeMind</string>
     <string name="about_feedback_bug_report">Feedback &amp; Bug Report</string>
     <string name="about_open_source_licenses">Open Source Licenses</string>
